@@ -223,6 +223,10 @@ ol.ladder{font-size:14px;color:var(--muted);padding-left:20px;margin:6px 0 0;lin
 #snapImg{display:block;max-width:100%;max-height:240px;margin:0 auto;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.25);animation:snapIn .6s cubic-bezier(.2,1.4,.4,1);user-select:auto;-webkit-user-select:auto;-webkit-touch-callout:default;}
 @keyframes snapIn{from{transform:scale(.6) rotate(-4deg);opacity:0}to{transform:none;opacity:1}}
 .card #snapWrap button{margin-top:8px;font-size:15px;padding:5px 16px;}
+body.card-open .overlay{padding-top:calc(env(safe-area-inset-top,0px) + 50px);}
+body.card-open #ach{top:calc(env(safe-area-inset-top,0px) + 6px);bottom:auto;max-width:calc(100vw - 112px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transform:translate(-50%,-12px);font-size:15px;padding:7px 16px;z-index:30;}
+body.card-open #ach.show{transform:translate(-50%,0);}
+body.card-open #zone{opacity:0 !important;}
 [hidden]{display:none !important;}
 </style>
 </head>
@@ -4007,6 +4011,11 @@ function attachSnap(){
       if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text:'My tower in Stable 🧱'});return;}}catch(e){if(e&&e.name==='AbortError')return;}
     toast('📸 Long-press the picture to save it',2200);};
 }
+/* ================= NOTIFICATIONS NEVER COVER BUTTONS ================= */
+const _showCard=show;
+show=function(id){const r=_showCard(id);document.body.classList.toggle('card-open',!!id);return r;};
+const _toastCard=toast;
+toast=function(t,ms){if(document.body.classList.contains('card-open')){notify(t);return;}return _toastCard(t,ms);};
 
 /* ---------- screens & flow ---------- */
 const SCREENS=['menu','camp','rec','pause','over','missions','shop','msg','chal','town','reb','biomes','settings','fb','season','songs','wobm'];
