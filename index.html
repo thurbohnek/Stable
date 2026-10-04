@@ -605,7 +605,7 @@ const SKINS=[
  ['galaxy','Galaxy',{s:60},'radial-gradient(circle at 30% 40%,#ff7ad9 0 2px,transparent 3px),radial-gradient(circle at 70% 60%,#fff 0 1px,transparent 2px),linear-gradient(#1a0f3d,#3b1c6e)']];
 const skinOk=k=>k[2].rs!=null?rhythmStars()>=k[2].rs:k[2].ch!=null?chapterDone(k[2].ch):k[2].rb!=null?rebirths>=k[2].rb:k[2].f!=null||k[2].e!=null?false:k[2].h!=null?best>=k[2].h:totalStars()>=k[2].s;
 const skinHas=k=>skinOk(k)||owned.includes(k[0]);
-const skinPrice=k=>k[2].e!=null||k[2].rb!=null||k[2].ch!=null||k[2].rs!=null?0:k[2].f!=null?k[2].f:k[2].h!=null?150+k[2].h*12:120+k[2].s*18;
+const skinPrice=k=>k[2].e!=null||k[2].rb!=null||k[2].ch!=null||k[2].rs!=null||k[2].se!=null||k[2].wk!=null?0:Math.round((k[2].f!=null?k[2].f*3:k[2].h!=null?300+k[2].h*45:300+k[2].s*55)*mult());
 const okIds=()=>SKINS.filter(skinHas).map(k=>k[0]);
 let skin=({brunost:'cheese',pepper:'ginger',is:'ice',gull:'gold',regnbue:'rainbow'})[store.get('stable-skin','std')]||store.get('stable-skin','std');
 if(!SKINS.some(k=>k[0]===skin&&skinHas(k)))skin='std';
@@ -784,6 +784,8 @@ function reset(){
   cam=0;shake=0;sflash=0;ts=1;slowT=0;tilt=0;tiltV=0;leanBase=0;wob=0;warned=-1;fellReason='';
   spawn();updateHud();setCombo(0);
 }
+/* how far the block swings from centre: full width on phones, capped on tablets/desktop */
+function swingR(){return Math.min(W*.5,260);}
 function spawn(){
   const l=floors+1,dir=l%2?1:-1;
   const p=wobble()?newItem():{w:stack[stack.length-1].w,hh:BH,hue:hue0+l*9,kind:null,seed:Math.random()*1000};
@@ -791,7 +793,7 @@ function spawn(){
     const tw=twist(),iceCh=mode==='campaign'?(stage.type==='ice'?.45:0):tw==='ice'?.14:(lvOf(worldFloors())>=4?.1:0),goldCh=mode==='campaign'&&stage.type==='gold'?.3:tw==='gold'?.14:.07;
     if(floors>1&&Math.random()<iceCh)p.icy=true;else if(floors>(mode==='campaign'&&stage.type==='gold'?0:2)&&Math.random()<goldCh)p.golden=true;}
   hazardify(p);
-  mover=Object.assign(p,{cx:-dir*W*.5,dir,trail:[]});
+  mover=Object.assign(p,{cx:-dir*swingR(),dir,trail:[]});
 }
 function drop(){
   if(state!=='play'||!mover||falling)return;
@@ -956,7 +958,7 @@ function update(rdt){
   if(slowLeft>0&&state==='play'){const c0=Math.ceil(slowLeft);slowLeft=Math.max(0,slowLeft-rdt);if(Math.ceil(slowLeft)!==c0)renderPw();}
   if(mover&&mover.golden&&Math.random()<.35&&state==='play')parts.push({type:'glit',x:W/2+mover.cx+(Math.random()-.5)*mover.w,h:towerTop()+HOV+Math.random()*BH,vx:0,vh:-20,g:30,drag:1,life:.7,t:0,r:2+Math.random()*2,hue:48,rot:Math.random()*6,vr:0});
   if((state==='play'||state==='ready')&&mover){
-    mover.cx+=mover.dir*speed()*dt;const R=W*.5;
+    mover.cx+=mover.dir*speed()*dt;const R=swingR();
     if(mover.cx>R){mover.cx=R;mover.dir=-1}if(mover.cx<-R){mover.cx=-R;mover.dir=1}
     mover.trail.unshift(mover.cx);if(mover.trail.length>4)mover.trail.pop();
   }
@@ -1529,7 +1531,7 @@ PWS.forEach(([k])=>{$('pw-'+k).addEventListener('click',e=>{e.stopPropagation();
 
 /* ---------- shop ---------- */
 let shopTab='blocks';
-const SOUNDS=[['classic','🔔','Classic','Soft chime bells',0],['arcade','👾','Arcade','Retro 8-bit blips',300],['marimba','🪵','Marimba','Warm wooden tones',300]];
+const SOUNDS=[['classic','🔔','Classic','Soft chime bells',0],['arcade','👾','Arcade','Retro 8-bit blips',1500],['marimba','🪵','Marimba','Warm wooden tones',2500]];
 function shopRow(L,icon,title,sub,btn,fn,dis,btn2,fn2){
   const d=document.createElement('div');d.className='item';d.innerHTML='<span class="ic"></span><span class="tx"><b></b><small></small></span>';
   d.querySelector('.ic').innerHTML=icon;d.querySelector('b').textContent=title;d.querySelector('small').textContent=sub;
@@ -1547,10 +1549,10 @@ function renderShop(){
     if(k[2].rb!=null&&!has){shopRow(L,'<span class="blk" style="background:'+k[3]+'"></span>',k[1],'Reward for reaching rebirth '+k[2].rb,'♻️ '+k[2].rb,()=>{},true);return;}
     if(k[2].e!=null&&!has){shopRow(L,'<span class="blk" style="background:'+k[3]+'"></span>',k[1],k[2].e==='spooky'?'Free during Spooky Season (October)':'Free during Winter Fest (December)','Event',()=>{},true);return;}
     shopRow(L,'<span class="blk" style="background:'+k[3]+'"></span>',k[1],has?(eq?'Equipped':'Owned'):(fl?(k[0]==='glass'?'Crystal-clear clinks':'Blooms on every block'):k[2].h!=null?'Or reach '+k[2].h+' floors in Endless':'Or earn '+k[2].s+' campaign stars'),
-      has?(eq?'✓':'Use'):(fl?'🌻 ':'🪙 ')+pr,()=>{if(!has){if(!(fl?buyF(pr):buy(pr)))return;owned.push(k[0]);save('stable-owned',owned);}skin=k[0];store.set('stable-skin',skin);renderShop();renderSkins();},eq);});
+      has?(eq?'✓':'Use'):(fl?'🌻 ':'🪙 ')+fmt(pr),()=>{if(!skinHas(k)){if(!(fl?buyF(pr):buy(pr)))return;if(!owned.includes(k[0]))owned.push(k[0]);save('stable-owned',owned);}skin=k[0];store.set('stable-skin',skin);renderShop();renderSkins();},eq);});
   if(shopTab==='power')PWS.forEach(([k,ic,n,d,b1,b2])=>{const pr=b1*mult(),fp=b2*mult();shopRow(L,ic,n,d+'. You have '+(pw[k]||0)+'.','🪙 '+fmt(pr),()=>{if(!buy(pr))return;pw[k]=(pw[k]||0)+1;save('stable-pw',pw);renderShop();},false,'🌻 '+fmt(fp),()=>{if(!buyF(fp))return;pw[k]=(pw[k]||0)+1;save('stable-pw',pw);renderShop();});});
-  if(shopTab==='sound')SOUNDS.forEach(([k,ic,n,d,pr])=>{const has=soundsOwned.includes(k),eq=sound===k;
-    shopRow(L,ic,n,d,has?(eq?'✓':'Use'):'🪙 '+pr,()=>{if(!has){if(!buy(pr))return;soundsOwned.push(k);save('stable-sounds',soundsOwned);}sound=k;store.set('stable-sound',k);renderShop();setTimeout(()=>SFX.perfect(3),50);},eq);});
+  if(shopTab==='sound')SOUNDS.forEach(([k,ic,n,d,bp])=>{const has=soundsOwned.includes(k),eq=sound===k,pr=bp*mult();
+    shopRow(L,ic,n,d,has?(eq?'✓':'Use'):'🪙 '+fmt(pr),()=>{if(!soundsOwned.includes(k)){if(!buy(pr))return;soundsOwned.push(k);save('stable-sounds',soundsOwned);}sound=k;store.set('stable-sound',k);renderShop();setTimeout(()=>SFX.perfect(3),50);},eq);});
   if(shopTab==='pets')renderPets(L);
   if(shopTab==='power'){const p=document.createElement('p');p.className='note';p.textContent='Pay with coins or sunflowers. Prices grow with your rebirth multiplier. A Magnet places your block but gives no perfect bonus, streak or sunflowers. Use power-ups with the buttons at the bottom of the screen in Endless and Campaign. Sunflowers can also revive you in Endless.';L.appendChild(p);}
 }
@@ -1683,13 +1685,19 @@ let chSeed=0,chTarget=0;
 const mkCode=(seed,score)=>'STB-'+seed+'-'+score;
 function parseCode(t){const m=String(t||'').toUpperCase().match(/STB\D*(\d{5})\D+(\d{1,4})/);return m?{seed:+m[1],score:+m[2]}:null;}
 function newSeed(){return 10000+Math.floor(Math.random()*90000);}
+const CLAUDE_URL='https://claude.ai/artifact/ECzovzhNFFYdFvAhpkwA5i';
+function appUrl(){try{const h=location.hostname||'';if(location.protocol.indexOf('http')!==0||/claude/i.test(h)||!h)return CLAUDE_URL;return location.origin+location.pathname;}catch(e){return CLAUDE_URL;}}
+function challengeLink(code){return appUrl()+'?c='+encodeURIComponent(code);}
 async function shareChallenge(score,seed){
-  const code=mkCode(seed,score),t='I stacked '+fl(score)+' in Stable 🧱 Can you beat me? Open Stable, tap Challenge and enter code '+code;
+  const code=mkCode(seed,score),link=challengeLink(code),t='I stacked '+fl(score)+' in Stable 🧱 Can you beat me? Tap to play my challenge: '+link+'\n(Or open Stable, tap Challenge and enter code '+code+')';
   const m=$('shareMsg');
-  try{if(navigator.share){await navigator.share({text:t});return;}}catch(e){if(e&&e.name==='AbortError')return;}
-  try{await navigator.clipboard.writeText(t);m.textContent='Copied! Send it to a friend. Code: '+code;m.hidden=false;return;}catch(e){}
+  try{if(navigator.share){await navigator.share({title:'Stable challenge',text:t});return;}}catch(e){if(e&&e.name==='AbortError')return;}
+  try{await navigator.clipboard.writeText(t);m.textContent='Link copied! Send it to a friend.\n'+link;m.hidden=false;return;}catch(e){}
   m.textContent='Send this to a friend:\n\n'+t;m.hidden=false;
 }
+/* open a challenge straight from a shared link (?c=STB-12345-40 or #c=...) */
+function linkedChallenge(){const srcs=[];try{srcs.push(location.search,location.hash);}catch(e){}try{srcs.push(document.referrer);}catch(e){}try{srcs.push(window.top.location.href);}catch(e){}
+  for(const x of srcs){if(!x)continue;let v=String(x);try{v=decodeURIComponent(v);}catch(e){}const c=parseCode(v);if(c)return c;}return null;}
 function showChallengeCard(){$('chIn').value='';$('chErr').hidden=true;show('chal');}
 
 /* ================= PETS ================= */
@@ -1765,9 +1773,9 @@ function drawRhythm(){
 
 /* ================= TOWN ================= */
 const TOWN=[
- ['tent','⛺','Campsite',90,'c',.06,0,26],['tree','🌳','Oak tree',60,'c',.17,1,32],['house','🏡','Cottage',150,'c',.3,1,32],['tulips','🌷','Tulip field',80,'c',.42,1,22],
- ['sheep','🐑','Sheep',100,'c',.55,1,24],['cow','🐄','Cow',110,'c',.67,1,26],['fountain','⛲','Fountain',220,'c',.8,1,30],['sunpatch','🌻','Sunflower patch',60,'f',.92,1,24],
- ['ferris','🎡','Ferris wheel',800,'c',.03,0,40],['castle','🏰','Castle',600,'c',.96,0,40],['statue','🗽','Statue',700,'c',.11,0,34],['rocket','🚀','Launch pad',1000,'c',.89,0,34]];
+ ['tent','⛺','Campsite',1500,'c',.06,0,26],['tree','🌳','Oak tree',800,'c',.17,1,32],['house','🏡','Cottage',4000,'c',.3,1,32],['tulips','🌷','Tulip field',1000,'c',.42,1,22],
+ ['sheep','🐑','Sheep',2000,'c',.55,1,24],['cow','🐄','Cow',2500,'c',.67,1,26],['fountain','⛲','Fountain',6000,'c',.8,1,30],['sunpatch','🌻','Sunflower patch',1000,'f',.92,1,24],
+ ['ferris','🎡','Ferris wheel',30000,'c',.03,0,40],['castle','🏰','Castle',15000,'c',.96,0,40],['statue','🗽','Statue',20000,'c',.11,0,34],['rocket','🚀','Launch pad',50000,'c',.89,0,34]];
 let townOwned=asArr(load('stable-town',[])).map(String);
 function drawTown(gg){
   if(!townOwned.length)return;
@@ -1782,8 +1790,8 @@ function drawTown(gg){
 }
 function renderTown(){
   refreshCoins();const L=$('townList');L.innerHTML='';
-  TOWN.forEach(([id,e,n,pr,cur])=>{const has=townOwned.includes(id);
-    shopRow(L,e,n,has?'In your town':'Decorate the ground around your tower',has?'✓':(cur==='f'?'🌻 ':'🪙 ')+pr,()=>{if(has)return;if(!(cur==='f'?buyF(pr):buy(pr)))return;townOwned.push(id);save('stable-town',townOwned);
+  [...TOWN].sort((a,b)=>(a[4]===b[4]?a[3]-b[3]:a[4]==='f'?1:-1)).forEach(([id,e,n,bp,cur])=>{const has=townOwned.includes(id),pr=bp*mult();
+    shopRow(L,e,n,has?'In your town':'Decorate the ground around your tower',has?'✓':(cur==='f'?'🌻 ':'🪙 ')+fmt(pr),()=>{if(townOwned.includes(id))return;if(!(cur==='f'?buyF(pr):buy(pr)))return;townOwned.push(id);save('stable-town',townOwned);
       renderTown();checkAch();},has);});
   $('townCount').textContent=townOwned.length+' / '+TOWN.length+' built. Your town shows at the bottom of the screen.';
 }
@@ -4172,7 +4180,7 @@ renderPets=function(L){
     let sub=id==='none'?'Keep the tower empty':has?(eq?'On your tower':'Owned'):(!ok?'🔒 Requires: '+petReqText(req,id):'Ready to adopt!');
     if(P&&P.d)sub+=' · ✨ '+P.n+': '+P.d;
     shopRow(L,e,n,sub,has?(eq?'✓':'Use'):!ok?'🔒':(flowers?'🌻 ':'🪙 ')+fmt(pr),()=>{
-      if(!has){if(!ok)return;if(!(flowers?buyF(pr):buy(pr)))return;petsOwned.push(id);save('stable-pets',petsOwned);notify('🐾 New pet: '+n+'!');}
+      if(!petsOwned.includes(id)){if(!ok)return;if(!(flowers?buyF(pr):buy(pr)))return;petsOwned.push(id);save('stable-pets',petsOwned);notify('🐾 New pet: '+n+'!');}
       pet=id;store.set('stable-pet',id);PS.inited=false;petReact('❤️');renderShop();},eq||(!has&&!ok));
     if(!has&&!nextMarked&&id!=='none'){nextMarked=true;L.lastChild.classList.add('nextpet');}
   });
@@ -4369,6 +4377,10 @@ let last=performance.now();
 function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);draw(now);requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 
+
+/* deep link: jump straight to a friend's challenge */
+setTimeout(()=>{const c=linkedChallenge();if(!c)return;try{if(typeof tut!=='undefined'&&tut.on)tutFinish(false);}catch(e){}
+  showChallengeCard();$('chIn').value=mkCode(c.seed,c.score);try{toast('⚔️ A friend challenged you: beat '+c.score+'! Tap Play.',3000);}catch(e){}},700);
 </script>
 </body>
 </html>
