@@ -253,6 +253,9 @@ body.card-open #zone{opacity:0 !important;}
 #labOver{z-index:2;}
 [hidden]{display:none !important;}
 </style>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ff5d8f">
+<link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
 <canvas id="c" aria-label="Game board"></canvas>
@@ -4673,6 +4676,9 @@ function rerollMission(idx){
 /* deep link: jump straight to a friend's challenge */
 setTimeout(()=>{const c=linkedChallenge();if(!c)return;try{if(typeof tut!=='undefined'&&tut.on)tutFinish(false);}catch(e){}
   showChallengeCard();$('chIn').value=mkCode(c.seed,c.score);try{toast('⚔️ A friend challenged you: beat '+c.score+'! Tap Play.',3000);}catch(e){}},700);
+
+/* offline support for the app version (not on claude.ai) */
+try{if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!/claude/i.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});}catch(e){}
 </script>
 </body>
 </html>
