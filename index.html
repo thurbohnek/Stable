@@ -3289,7 +3289,7 @@ $('pFb').onclick=()=>{SFX.click();openFeedback('pause');};$('setFb').onclick=()=
 const UNLOCK=[['bDaily',2,'Daily Tower'],['bWobble',3,'Wobble Tower'],['bRhythm',4,'Rhythm mode'],['bChallenge',5,'Friend Challenges'],['bTown',6,'My Town'],['bRebirth',8,'Rebirth']];
 let menuVer=store.get('stable-menuver','');
 if(!menuVer){menuVer=(best>0||stats.games>0||rebirths>0)?'vet':'new';store.set('stable-menuver',menuVer);}
-const isUnlocked=id=>{if(menuVer==='vet')return true;const u=UNLOCK.find(x=>x[0]===id);return !u||plv>=u[1]||(id==='bRebirth'&&rebirths>0);};
+const isUnlocked=id=>{if(menuVer==='vet')return true;const u=UNLOCK.find(x=>x[0]===id);return !u||plv>=u[1]||rebirths>0;};
 function refreshLocks(){UNLOCK.forEach(([id,lv])=>{const b=$(id);if(!b)return;const lock=!isUnlocked(id);b.classList.toggle('locked',lock);
   let tag=b.querySelector('.lk');if(lock){if(!tag){tag=document.createElement('em');tag.className='lk';b.appendChild(tag);}tag.textContent='🔒 Lv '+lv;}else if(tag)tag.remove();});}
 $('menu').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!b.classList.contains('locked'))return;e.stopPropagation();e.preventDefault();
@@ -5974,8 +5974,13 @@ function townIcon(id){if(townIconCache[id])return townIconCache[id];const c=docu
 {const _pz5=pause;pause=function(){const r=_pz5.apply(this,arguments);try{const b=$('pStages');const lbl={campaign:'☰ Stages',wobble:'☰ Levels',rhythm:'☰ Songs'}[mode];
   b.hidden=!lbl;if(lbl)b.textContent=lbl;}catch(e){}return r;};}
 
-const BUILD='1.73';
+const BUILD='1.75';
 const WHATS_NEW=[
+ '🎨 Hand-made icons everywhere instead of emoji',
+ '♾️ Endless now lets you pick your block, pet, world and boosters before you play',
+ '⭐ A level bar at the top while you play, and rebirth progress for both coins and level',
+ '🔓 Game modes you have unlocked stay unlocked after a rebirth',
+ '♾️ Endless now lets you pick your block, pet, world and boosters before you play',
  '🧱 40 new blocks, each with its own sound: food, nature, tech, fun and magic. Find them in the Shop with the new filters',
  '🏘️ Your town now grows step by step: new buildings unlock one by one as you play',
  '🏘️ Town buildings are now drawn by hand, and every building gives you a bonus',
@@ -5998,7 +6003,7 @@ function showWhatsNew(){wnOpen=true;
   /* keeps coming back until "Got it!" is tapped, never on top of another popup */
   const t=setInterval(()=>{if(!whatsNewDue()){clearInterval(t);return;}
     if(document.getElementById('splash'))return;
-    if(wnOpen){if(!$('msg').hidden&&$('msgTitle').textContent==="What's new ✨")return;wnOpen=false;}
+    if(wnOpen){if(!$('msg').hidden&&$('msgTitle').textContent.startsWith("What's new"))return;wnOpen=false;}
     if($('menu').hidden||!$('msg').hidden)return;setTimeout(()=>{if(!$('menu').hidden&&$('msg').hidden&&!wnOpen)showWhatsNew();},600);},1000);})();
 
 /* ===== town grows step by step (Oct 9): each building unlocks after the one before it, as you stack more blocks over time ===== */
@@ -6268,6 +6273,382 @@ let blockCat='All';
 
 /* chosen block: check again now that every block exists */
 (function(){try{const id=store.get('stable-skin','std'),k=SKINS.find(x=>x[0]===id);if(k&&skinHas(k))skin=id;}catch(e){}try{renderSkins();}catch(e){}})();
+
+/* ===== Endless: get-ready screen to pick block, pet, world and boosters (Oct 9) ===== */
+(function(){
+  const ov=document.createElement('div');ov.className='overlay';ov.id='prep';ov.hidden=true;
+  ov.innerHTML='<div class="card"><h2 id="prepTitle">Endless</h2><p class="note" id="prepBest"></p><div id="prepBody"></div><div class="backbar"><button id="prepGo" class="prepgo">Play ▶</button><button id="prepBack" class="ghost">Back</button></div></div>';
+  document.body.appendChild(ov);if(!SCREENS.includes('prep'))SCREENS.push('prep');
+  const st=document.createElement('style');st.textContent=`
+#prep .card{text-align:left}#prep h2,#prep #prepBest{text-align:center}
+.prepH{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 4px 6px}
+.prepH small{text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:700;color:var(--ink);opacity:.8}
+.prepRow{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;scroll-snap-type:x proximity;scrollbar-width:none;margin:0 -4px}
+.prepRow::-webkit-scrollbar{display:none}
+.card .prepRow button.pick{flex:0 0 auto;width:78px;min-width:0;margin:0;padding:8px 4px 7px;border-radius:14px;background:var(--chip);color:var(--ink);box-shadow:none;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:12px;font-weight:800;line-height:1.1;scroll-snap-align:start}
+.card .prepRow button.pick.on{box-shadow:inset 0 0 0 2.5px #ff5d8f;background:rgba(255,93,143,.12)}
+.prepRow .sw2{width:58px;height:20px;border-radius:5px;box-shadow:inset 0 -3px 0 rgba(0,0,0,.15)}
+.prepRow .em{font-size:26px;line-height:1;height:28px;display:flex;align-items:center}
+.prepRow .sub{font-size:10.5px;font-weight:700;color:var(--muted)}
+.prepList{background:var(--chip);border-radius:14px;padding:2px 12px}
+.prepList .srow{padding:9px 0}
+.card button.prepgo{width:100%;max-width:none !important;margin:8px 0 0 !important;font-size:22px;padding:12px 0;border-radius:18px;background:linear-gradient(135deg,#ff7aa2,#ff5d8f 50%,#f2457a);box-shadow:0 5px 0 #c93a6a}
+`;document.head.appendChild(st);
+})();
+let prepOpts={boost:true,shield:false};
+function prepPick(row,items,cur,onPick){row.innerHTML='';items.forEach(it=>{const b=document.createElement('button');b.className='pick'+(it.id===cur?' on':'');b.innerHTML=it.html;
+  const l=document.createElement('span');l.textContent=it.name;b.appendChild(l);if(it.sub){const s=document.createElement('span');s.className='sub';s.textContent=it.sub;b.appendChild(s);}
+  b.onclick=()=>{try{SFX.click();}catch(e){}onPick(it.id);renderPrep();};row.appendChild(b);});
+  requestAnimationFrame(()=>{const on=row.querySelector('.on');if(on)row.scrollLeft=Math.max(0,on.offsetLeft-row.clientWidth/2+on.clientWidth/2);});}
+function renderPrep(){const B=$('prepBody');B.innerHTML='';
+  $('prepBest').textContent=best>0?'Your record: '+best+' floors':'How high can you go?';
+  const sec=(t,extra)=>{const h=document.createElement('div');h.className='prepH';h.textContent=t;if(extra){const s=document.createElement('small');s.textContent=extra;h.appendChild(s);}B.appendChild(h);const r=document.createElement('div');r.className='prepRow';B.appendChild(r);return r;};
+  /* block */
+  const skins=SKINS.filter(skinHas),cs=SKINS.find(k=>k[0]===skin);
+  prepPick(sec('Block',cs?cs[1]:''),skins.map(k=>({id:k[0],name:k[1],html:'<span class="sw2" style="background:'+k[3]+'"></span>'})),skin,id=>{skin=id;store.set('stable-skin',id);try{renderSkins();}catch(e){}});
+  /* pet */
+  const pets=PETS.filter(p=>petsOwned.includes(p[0]));
+  if(pets.length>1){const P=PERKS[pet]||PERKS.none;prepPick(sec('Pet',pet==='none'?'No pet':P.n),pets.map(([id,n,e])=>({id,name:n,html:'<span class="em">'+e+'</span>',sub:id==='none'?'':(PERKS[id]||{}).n})),pet,id=>{pet=id;store.set('stable-pet',id);PS.inited=false;if(id!=='none'&&!petShow){petShow=true;store.set('stable-petshow','1');}});}
+  /* world */
+  const bs=BIOMES.filter(b=>biomesUnlocked.includes(b.id));
+  if(bs.length>1){const cb=BIOMES.find(b=>b.id===biome)||BIOMES[0];prepPick(sec('World',cb.desc?cb.desc.split('.')[0]:''),bs.map(b=>({id:b.id,name:b.n,html:'<span class="em">'+b.e+'</span>',sub:b.bonus?'+'+Math.round(b.bonus*100)+'% coins':'Calm'})),biome,id=>{biome=id;store.set('stable-biome',id);try{idleBg();refreshMenu();}catch(e){}});}
+  /* extras */
+  const rows=[];
+  const sw=(on,fn)=>{const b=document.createElement('button');b.className='sw'+(on?' on':'');b.setAttribute('role','switch');b.onclick=()=>{try{SFX.click();}catch(e){}fn();renderPrep();};return b;};
+  const row=(label,sub,ctrl)=>{const r=document.createElement('div');r.className='srow';const l=document.createElement('span');l.className='sl';const b=document.createElement('b');b.textContent=label;l.appendChild(b);
+    if(sub){const s=document.createElement('small');s.textContent=sub;l.appendChild(s);}r.appendChild(l);r.appendChild(ctrl);return r;};
+  if(gBoost.c>0||gBoost.x>0)rows.push(row('Use my boosters',[gBoost.c?'+50% coins ('+gBoost.c+' saved)':'',gBoost.x?'double XP ('+gBoost.x+' saved)':''].filter(Boolean).join(' · ')+'. Turn off to save them.',sw(prepOpts.boost,()=>prepOpts.boost=!prepOpts.boost)));
+  if((pw.shield||0)>0)rows.push(row('Start with a Shield on','Uses 1 of your '+pw.shield+' Shields. One miss is forgiven.',sw(prepOpts.shield,()=>prepOpts.shield=!prepOpts.shield)));
+  if(rows.length){const h=document.createElement('div');h.className='prepH';h.textContent='Extras';B.appendChild(h);const g=document.createElement('div');g.className='prepList';rows.forEach(r=>g.appendChild(r));B.appendChild(g);}
+}
+function openPrep(){prepOpts.shield=false;renderPrep();show('prep');}
+const _endlessGo=$('bEndless').onclick;
+$('bEndless').onclick=function(){if(!coachDone('endless')||typeof _endlessGo!=='function')return _endlessGo&&_endlessGo.apply(this,arguments);try{SFX.click();}catch(e){}openPrep();};
+$('prepBack').onclick=()=>{try{SFX.click();}catch(e){}showMenu();};
+$('prepGo').onclick=()=>{const saved={c:gBoost.c,x:gBoost.x};if(!prepOpts.boost){gBoost.c=0;gBoost.x=0;}
+  try{_endlessGo();}finally{if(!prepOpts.boost){gBoost.c=saved.c;gBoost.x=saved.x;saveBoost();}}
+  if(prepOpts.shield&&state==='play'&&(pw.shield||0)>0&&!shieldOn){pw.shield--;save('stable-pw',pw);shieldOn=true;try{renderPw();}catch(e){}setTimeout(()=>toast('🛡️ Shield on: one miss is forgiven'),2700);}};
+
+/* ===== in-game level bar and clearer rebirth progress (Oct 9) ===== */
+(function(){const d=document.createElement('div');d.id='lvBar';d.className='hud';d.hidden=true;d.innerHTML='<b></b><span class="lb"><i></i></span><small></small>';document.body.appendChild(d);
+  const st=document.createElement('style');st.textContent=`
+#lvBar{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 8px);display:flex;align-items:center;gap:7px;background:rgba(0,0,0,.22);padding:3px 10px 3px 9px;border-radius:999px;font-size:13px;color:#fff;z-index:3;white-space:nowrap;text-shadow:0 1px 0 rgba(0,0,0,.25);pointer-events:none}
+#lvBar b{font-weight:800}
+#lvBar .lb{width:84px;height:7px;border-radius:4px;background:rgba(255,255,255,.3);overflow:hidden;display:block}
+#lvBar .lb i{display:block;height:100%;background:linear-gradient(90deg,#ffe066,#ffb21a);border-radius:4px;transition:width .3s}
+#lvBar small{font-size:11px;font-weight:700;opacity:.9}
+#lvBar.up{animation:lvPop .6s ease}
+@keyframes lvPop{40%{transform:translateX(-50%) scale(1.15)}}
+#hudTop{top:calc(env(safe-area-inset-top,0px) + 34px)}
+#score{top:calc(env(safe-area-inset-top,0px) + 52px)}
+#flw,#cnw{top:calc(env(safe-area-inset-top,0px) + 40px)}
+#cnw small{font-size:10.5px;line-height:1.15}
+`;document.head.appendChild(st);})();
+let lvSeen=plv;
+function paintLvBar(){const el=$('lvBar');if(!el)return;try{const li=levelInfo();el.querySelector('b').textContent='Lv '+li.L;el.querySelector('i').style.width=Math.min(100,li.rest/Math.max(1,li.need)*100)+'%';
+  el.querySelector('small').textContent=fmt(li.rest)+' / '+fmt(li.need)+' XP';if(li.L!==lvSeen){lvSeen=li.L;el.classList.remove('up');void el.offsetWidth;el.classList.add('up');}}catch(e){}}
+{const _hud11=hud;hud=function(on){const r=_hud11.apply(this,arguments);try{$('lvBar').hidden=!on;if(on)paintLvBar();}catch(e){}return r;};}
+{const _ax11=addXp;addXp=function(n){const r=_ax11.apply(this,arguments);try{if(!$('lvBar').hidden)paintLvBar();}catch(e){}return r;};}
+/* under the coins: what rebirth still needs, both coins and level */
+paintCnw=function(){const el=$('cnw');if(!el)return;el.textContent='🪙 '+fmt(coins);if(rebirths>=RB_MAX)return;
+  const c=rbCost(rebirths),L=rbLevel(rebirths),okC=coins>=c,okL=plv>=L;
+  const add=t=>{const sm=document.createElement('small');sm.textContent=t;el.appendChild(sm);};
+  if(okC&&okL){add('♻️ Rebirth ready!');return;}
+  add('♻️ Rebirth: 🪙 '+(okC?'✓':fmt(coins)+'/'+fmt(c)));add('⭐ Lv '+(okL?'✓':plv+'/'+L));};
+try{paintCnw();}catch(e){}
+
+/* ===== Icons instead of emoji everywhere (Oct 9) =====
+   Every emoji in menus, notices and on the game canvas is drawn with a matching hand-made icon. */
+const ICONS=(function(){
+  const s=(o)=>'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">'+o+'</svg>';
+  const hl=(x,y,rx,ry)=>`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".35"/>`;
+  const C=(x,y,r,f,e)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${f}"${e||''}/>`;
+  const E=(x,y,rx,ry,f,e)=>`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${f}"${e||''}/>`;
+  const P=(d,f,e)=>`<path d="${d}" fill="${f}"${e||''}/>`;
+  const L=(d,c,w)=>`<path d="${d}" fill="none" stroke="${c}" stroke-width="${w||2}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const R=(x,y,w,h,r,f,e)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${f}"${e||''}/>`;
+  const star=(cx,cy,r,f,st)=>{let d='';for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,q=i%2?r*.45:r;d+=(i?'L':'M')+(cx+Math.cos(a)*q).toFixed(1)+' '+(cy+Math.sin(a)*q).toFixed(1);}return P(d+'Z',f,st?` stroke="${st}" stroke-width="1.4" stroke-linejoin="round"`:'');};
+  /* faces */
+  const face=(m,ex)=>s(C(16,16,13,'#ffcd3c')+P('M3 16a13 13 0 0 0 26 0a13 11 0 0 1-26 0z','#f2a91a')+hl(11,9,5,3)+(ex||'')+m);
+  const eyes=(t)=>t==='happy'?L('M9 13q2.5-3 5 0M18 13q2.5-3 5 0','#5a3410',2):t==='heart'?P('M11.5 15.5l-3.6-3.4a2.1 2.1 0 0 1 3.6-2.2a2.1 2.1 0 0 1 3.6 2.2z','#ff3b5c')+P('M20.5 15.5l-3.6-3.4a2.1 2.1 0 0 1 3.6-2.2a2.1 2.1 0 0 1 3.6 2.2z','#ff3b5c'):t==='x'?L('M9 10l4 4M13 10l-4 4M19 10l4 4M23 10l-4 4','#5a3410',2):t==='wide'?C(11.5,13,3,'#fff')+C(20.5,13,3,'#fff')+C(11.5,13.5,1.6,'#3a2410')+C(20.5,13.5,1.6,'#3a2410'):C(11.5,13,1.8,'#3a2410')+C(20.5,13,1.8,'#3a2410');
+  const FACES={
+   '😊':face(L('M10 19q6 5 12 0','#5a3410',2),eyes('happy')+E(8,18,2.2,1.3,'#ff8fa3')+E(24,18,2.2,1.3,'#ff8fa3')),
+   '😍':face(P('M9 18q7 7 14 0z','#7a2a10'),eyes('heart')),
+   '😱':face(E(16,22,3.2,4.5,'#5a2410'),eyes('wide')+P('M4 9q3-6 7-6','none',' stroke="#6ad0ff" stroke-width="2"')+E(7,24,1.6,2.4,'#6ad0ff')),
+   '😬':face(R(9,18,14,6,3,'#fff',' stroke="#5a3410" stroke-width="1.5"')+L('M9 21h14M12.5 18v6M16 18v6M19.5 18v6','#5a3410',1),eyes()),
+   '😭':face(P('M10 22q6-6 12 0','none',' stroke="#5a3410" stroke-width="2"'),eyes('happy')+P('M9 14v13','none',' stroke="#5ac8ff" stroke-width="3" stroke-linecap="round"')+P('M23 14v13','none',' stroke="#5ac8ff" stroke-width="3" stroke-linecap="round"')),
+   '😨':face(E(16,22,3,2.4,'#5a2410'),eyes('wide')+P('M6 6h20v4H6z','#8ec7ff',' opacity=".55"')),
+   '😅':face(L('M10 19q6 5 12 0','#5a3410',2),eyes('happy')+P('M26 5q3 4 0 6q-3-2 0-6z','#6ad0ff')),
+   '😡':s(C(16,16,13,'#ff6a3d')+P('M3 16a13 13 0 0 0 26 0a13 11 0 0 1-26 0z','#d9481e')+hl(11,9,5,3)+L('M8 10l6 2M24 10l-6 2','#5a1a08',2.2)+C(11.5,14,1.8,'#3a1008')+C(20.5,14,1.8,'#3a1008')+L('M10 23q6-5 12 0','#5a1a08',2)),
+   '😵':face(E(16,22,2.6,2,'#5a2410'),eyes('x')),
+   '😳':face(E(16,22,2,1.6,'#5a2410'),eyes('wide')+E(8,18,2.6,1.6,'#ff6b81')+E(24,18,2.6,1.6,'#ff6b81')),
+   '😋':face(L('M10 19q6 5 12 0','#5a3410',2)+P('M17 20q4 0 4 4q-3 1-4-4z','#ff5d7a'),eyes('happy')),
+   '🙃':s(`<g transform="rotate(180 16 16)">${C(16,16,13,'#ffcd3c')}${P('M3 16a13 13 0 0 0 26 0a13 11 0 0 1-26 0z','#f2a91a')}${L('M10 19q6 5 12 0','#5a3410',2)}${C(11.5,13,1.8,'#3a2410')}${C(20.5,13,1.8,'#3a2410')}</g>`),
+  };
+  /* animal heads */
+  const head=(fur,inner,ears,extra,nose)=>s((ears||'')+C(16,17,11,fur)+P('M5 17a11 11 0 0 0 22 0a11 9 0 0 1-22 0z','rgba(0,0,0,.12)')+(inner||'')+C(12,15,1.7,'#1d1d24')+C(20,15,1.7,'#1d1d24')+C(11.4,14.4,.6,'#fff')+C(19.4,14.4,.6,'#fff')+(nose||E(16,19,1.8,1.3,'#2a1d1d'))+(extra||''));
+  const triEars=(f,i)=>P('M6 13L7 3l8 6z',f)+P('M26 13L25 3l-8 6z',f)+P('M8 11l.6-5.5 4.4 3.3z',i)+P('M24 11l-.6-5.5-4.4 3.3z',i);
+  const roundEars=(f,i)=>C(8,8,4.5,f)+C(24,8,4.5,f)+C(8,8,2.3,i)+C(24,8,2.3,i);
+  const ANIM={
+   '🐱':head('#f7a64a',E(16,20.5,5,3.5,'#fde3c0'),triEars('#f7a64a','#ffc2c8'),L('M9 19l-5-1M9 21l-5 1M23 19l5-1M23 21l5 1','#7a4a20',.8)+L('M13 8l1 2M16 7v2.5M19 8l-1 2','#c9782a',1.2),P('M14.6 18.6h2.8L16 20z','#ff7a8a')),
+   '🐈':null,
+   '🐶':head('#d9a066',E(16,20.5,5.5,4,'#fbe6c8'),P('M5 8q-3 8 2 12l3-9z','#7a4a26')+P('M27 8q3 8-2 12l-3-9z','#7a4a26'),L('M16 21v1.8','#2a1d1d',1)+P('M14 23q2 3 4 0z','#ff6b81')),
+   '🦊':head('#f2782a',P('M5 17q5 8 11 8t11-8q-5 2-11 2t-11-2z','#fff3e6'),triEars('#f2782a','#3a2416'),'',E(16,21,1.6,1.2,'#1d1d24')),
+   '🐼':head('#fafafa',E(11.5,15,3.5,4,'#1d1d24',' transform="rotate(-20 11.5 15)"')+E(20.5,15,3.5,4,'#1d1d24',' transform="rotate(20 20.5 15)"'),roundEars('#1d1d24','#1d1d24'),C(11.8,14.6,.8,'#fff')+C(20.8,14.6,.8,'#fff')),
+   '🐯':head('#f79b2e',E(16,21,5.5,3.8,'#fff3e0'),roundEars('#f79b2e','#fde0b8'),L('M16 6v4M12 7l1 3M20 7l-1 3M5 15h4M5 18h3M27 15h-4M27 18h-3','#2a1a10',1.5)),
+   '🦁':s(C(16,17,14,'#c86a1e')+C(16,17,11,'#f7b648')+P('M5 17a11 11 0 0 0 22 0a11 9 0 0 1-22 0z','rgba(0,0,0,.1)')+E(16,21,5,3.5,'#fde3b8')+C(12,15,1.7,'#1d1d24')+C(20,15,1.7,'#1d1d24')+P('M14.4 18.5h3.2L16 20.4z','#5a2a10')),
+   '🐺':head('#8a93a6',P('M8 18q8 9 16 0q-8 3-16 0z','#e6e9f0'),triEars('#8a93a6','#d6dbe6'),'',E(16,20,1.7,1.3,'#1d1d24')),
+   '🐰':s(E(11,7,3,7,'#f4f1f5')+E(21,7,3,7,'#f4f1f5')+E(11,7,1.4,5,'#ffbdd0')+E(21,7,1.4,5,'#ffbdd0')+C(16,19,10,'#f4f1f5')+C(12,17.5,1.6,'#1d1d24')+C(20,17.5,1.6,'#1d1d24')+P('M14.6 21h2.8L16 22.6z','#ff7a9a')+E(10,21.5,2,1.2,'#ffc2d4')+E(22,21.5,2,1.2,'#ffc2d4')),
+   '🦝':head('#9aa0aa',P('M6 15q5-4 10 0q5-4 10 0q-2 4-5 3t-5-1q-2 2-5 1t-5-3z','#2a2d36')+E(16,21,5,3,'#e8eaf0'),triEars('#9aa0aa','#3a3d46'),C(12,15,.9,'#fff')+C(20,15,.9,'#fff')),
+   '🐒':s(C(5.5,17,4,'#8a5a32')+C(26.5,17,4,'#8a5a32')+C(5.5,17,2,'#f2cfa0')+C(26.5,17,2,'#f2cfa0')+C(16,16,11,'#8a5a32')+P('M8 16q0-6 8-4q8-2 8 4q0 9-8 9t-8-9z','#f2cfa0')+C(12.5,15,1.6,'#1d1d24')+C(19.5,15,1.6,'#1d1d24')+L('M13 21q3 2 6 0','#5a3410',1.4)),
+   '🐻‍❄️':head('#f4f6fa',E(16,20.5,5,3.6,'#ffffff'),roundEars('#f4f6fa','#d8dde8')),
+   '🐸':s(C(10,9,5,'#5fc24a')+C(22,9,5,'#5fc24a')+E(16,19,13,10,'#5fc24a')+P('M3 19a13 10 0 0 0 26 0a13 8 0 0 1-26 0z','#3e9b34')+C(10,9,3,'#fff')+C(22,9,3,'#fff')+C(10,9.5,1.6,'#1d1d24')+C(22,9.5,1.6,'#1d1d24')+L('M9 21q7 5 14 0','#1f5a1a',2)+E(8,19,2,1.2,'#ff8fa3')+E(24,19,2,1.2,'#ff8fa3')),
+   '🦉':s(P('M6 6l5 4h10l5-4v14a10 10 0 0 1-20 0z','#8a5a32')+E(16,22,7,7,'#d9b382')+C(11.5,13,5,'#fff')+C(20.5,13,5,'#fff')+C(11.5,13,2.6,'#2a1a10')+C(20.5,13,2.6,'#2a1a10')+C(12.3,12.2,.8,'#fff')+C(21.3,12.2,.8,'#fff')+P('M14 17h4l-2 4z','#f2a91a')),
+   '🐧':s(E(16,17,11,13,'#1d2230')+E(16,20,8,10,'#fafafa')+C(12,13,1.8,'#1d1d24')+C(20,13,1.8,'#1d1d24')+C(12.5,12.5,.6,'#fff')+C(20.5,12.5,.6,'#fff')+P('M13 16h6l-3 3.5z','#ffb21a')+E(11,23,2,1.2,'#ffb3c1')+E(21,23,2,1.2,'#ffb3c1')),
+   '🦄':s(P('M16 1l3 9h-6z','#ffd24a')+L('M14 4l4 1.5M13.6 6.5l5 1.5','#e6a800',1)+P('M20 7q8 0 9 9q-4-3-7-2z','#c86bff')+P('M21 10q6 2 6 9q-3-4-6-4z','#5ac8ff')+C(15,18,10,'#fbf7ff')+E(15,24,6,4,'#ffd6ec')+C(11,16,1.7,'#1d1d24')+C(19,16,1.7,'#1d1d24')+C(13,24,.9,'#c47aa0')+C(17,24,.9,'#c47aa0')),
+   '🐲':s(P('M7 9L5 2l7 5zM25 9l2-7-7 5z','#f2d24a')+C(16,17,11,'#4cbf6a')+P('M5 17a11 11 0 0 0 22 0a11 9 0 0 1-22 0z','#2f8f4a')+E(16,22,7,4.5,'#8fe0a0')+C(11.5,14,2.2,'#fff')+C(20.5,14,2.2,'#fff')+C(11.5,14.4,1.3,'#1d1d24')+C(20.5,14.4,1.3,'#1d1d24')+C(13.5,21.5,1,'#1f5a2a')+C(18.5,21.5,1,'#1f5a2a')+P('M10 9l2 2M16 7v3M22 9l-2 2','none',' stroke="#2f8f4a" stroke-width="1.5" stroke-linecap="round"')),
+   '🐉':null,
+   '🐑':s(C(9,13,5,'#fbfbf6')+C(16,10,6,'#fbfbf6')+C(23,13,5,'#fbfbf6')+C(12,19,6,'#fbfbf6')+C(20,19,6,'#fbfbf6')+R(9,24,2.5,6,1,'#3a3a44')+R(20,24,2.5,6,1,'#3a3a44')+E(26,13,4,4.8,'#3a3a44')+C(27.4,12,1,'#fff')),
+   '🐄':s(R(4,10,20,13,6,'#fafaf6')+E(10,15,4,3,'#2a2a30')+E(18,19,3,2.5,'#2a2a30')+R(6,21,3,7,1,'#e8e2d8')+R(19,21,3,7,1,'#e8e2d8')+R(20,7,10,11,4,'#fafaf6')+R(22,13,9,6,3,'#ffb3c1')+C(24,10.5,1.1,'#222')+P('M21 7l-2-4 3 3z','#e8d9a8')+C(25,16,.8,'#a85a6a')+C(28,16,.8,'#a85a6a')),
+   '🐝':s(E(10,10,5,4,'#e6f6ff',' opacity=".9"')+E(20,9,5,4,'#e6f6ff',' opacity=".9"')+E(16,19,10,8,'#ffcf2e')+P('M12 11.5h4v15h-4zM19 12h3.5v14H19z','#2a2230')+C(26,16,3.5,'#2a2230')+C(27,15,.8,'#fff')+P('M5 19l-3 1 3 1z','#2a2230')),
+   '🦆':s(E(14,21,11,7,'#ffd24a')+C(22,11,6,'#ffd24a')+P('M27 11h4l-4 3z','#ff8c42')+C(23.5,10,1.2,'#1d1d24')+P('M6 20q5-3 9 1q-5 2-9-1z','#f2b52a')+E(16,28,9,1.5,'#7fc8ff',' opacity=".6"')),
+   '🐦':s(E(14,18,10,7,'#4a9cff')+C(22,12,5.5,'#4a9cff')+P('M27 12h4l-4 2.5z','#ffb21a')+C(23.5,11,1.2,'#1d1d24')+P('M5 16q4-6 11-2q-5 5-11 2z','#2f7ad9')+E(15,22,6,3,'#bfe0ff')+P('M4 19l-3-2v4z','#2f7ad9')),
+   '🦅':s(P('M2 14q7-6 14 0q7-6 14 0q-7 1-9 5h-10q-2-4-9-5z','#6b4424')+C(16,13,4.5,'#fafafa')+P('M19 13h4l-3 2.5z','#ffb21a')+C(17.5,12,1,'#1d1d24')+P('M12 19h8l-4 6z','#6b4424')),
+   '🦜':s(E(16,18,8,10,'#e8343a')+C(17,9,6,'#e8343a')+P('M21 8q5 0 4 5q-2-3-4-2z','#ffd24a')+C(18,8,2,'#fff')+C(18.4,8,1,'#1d1d24')+P('M9 16q-4 8 2 13q2-7 3-10z','#2f7ad9')+P('M12 26l-2 6 5-4z','#3cbf5a')+E(16,20,4,5,'#ffd24a',' opacity=".7"')),
+   '🦋':s(P('M16 16q-6-14-13-9q-2 8 13 9z','#ff8c42')+P('M16 16q6-14 13-9q2 8-13 9z','#ff8c42')+P('M16 16q-8 2-10 9q6 3 10-9z','#ffb347')+P('M16 16q8 2 10 9q-6 3-10-9z','#ffb347')+C(8,9,2,'#fff',' opacity=".7"')+C(24,9,2,'#fff',' opacity=".7"')+R(15,8,2,16,1,'#3a2416')+L('M15.5 8q-2-4-4-5M16.5 8q2-4 4-5','#3a2416',1)),
+   '🦇':s(P('M16 12q-3-4-6-1q-4-2-8 3q4 0 5 4q3-2 5 0q2-3 4-1q2-2 4 1q2-2 5 0q1-4 5-4q-4-5-8-3q-3-3-6 1z','#3a2d4a')+C(16,15,4,'#3a2d4a')+P('M13 11l1 3M19 11l-1 3','none',' stroke="#3a2d4a" stroke-width="2"')+C(14.5,15,.9,'#ffd24a')+C(17.5,15,.9,'#ffd24a')),
+   '🐙':s(E(16,12,10,9,'#c86bff')+P('M7 16q-3 8 1 12q1-6 3-9zM12 19q-2 8 1 11q1-6 2-10zM20 19q2 8-1 11q-1-6-2-10zM25 16q3 8-1 12q-1-6-3-9z','#c86bff')+C(12,12,2.4,'#fff')+C(20,12,2.4,'#fff')+C(12,12.5,1.3,'#1d1d24')+C(20,12.5,1.3,'#1d1d24')+hl(13,6,4,2)),
+   '🦑':s(P('M16 2q8 6 7 14h-14q-1-8 7-14z','#ff8fa3')+P('M9 16q-2 8 0 14l3-12zM13 16q-1 8 1 14l1-14zM19 16q1 8-1 14l-1-14zM23 16q2 8 0 14l-3-12z','#ff8fa3')+C(13,12,1.8,'#1d1d24')+C(19,12,1.8,'#1d1d24')),
+   '🦖':s(P('M4 26q2-10 10-12q0-8 8-10q7 0 7 6q0 4-5 4h-2q2 6-2 10l-2 8h-3l1-6q-3 1-5 0l-2 6h-3z','#5fbf5a')+C(23,9,1.4,'#1d1d24')+L('M24 13h4','#fff',1.5)+P('M10 18l-6 4 2 2z','#5fbf5a')),
+   '🦎':s(P('M4 22q6-6 12-4q6-6 12-2q2 2 0 4q-4-1-7 1q-5 4-10 2q-3 2-7-1z','#7ad04a')+C(26,17,1,'#1d1d24')+L('M10 21l-2 5M18 20l2 5M14 18l-2-4M21 17l2-4','#5fa83a',2)),
+   '🦂':s(P('M6 22q4-6 10-5q6-1 9 3','none',' stroke="#c8782a" stroke-width="5" stroke-linecap="round"')+P('M24 20q6-4 4-10q-2-4-5-2','none',' stroke="#c8782a" stroke-width="3.5" stroke-linecap="round"')+P('M22 8l2-4 2 4z','#8a4a1a')+P('M8 21l-5-5M9 23l-6 0M12 24l-3 5M16 24l1 5','none',' stroke="#a8601e" stroke-width="2" stroke-linecap="round"')+C(7,20,1,'#1d1d24')),
+   '🐊':s(P('M2 18q6-6 16-6h8q4 0 4 3l-6 2h6q0 3-4 3h-10q-8 0-14-2z','#4aa84a')+C(21,12,2,'#fff')+C(21.3,12,1,'#1d1d24')+L('M14 18l1 2M17 18l1 2M20 18l1 2M23 18l1 2','#fff',1)+P('M6 20l-2 4h3l1-3zM14 21l-1 4h3l1-3z','#3a8a3a')),
+   '🐪':s(P('M4 22q1-9 6-8q3-6 6 0q2-4 5 0q3 0 4 4l3-4q4 0 4 3l-3 1-3 5v6h-3v-5h-9v5h-3v-5q-4 1-6-2z','#d9a35f')+C(27,15,1,'#1d1d24')),
+   '🐾':s(E(10,22,4.5,4,'#8a5a3a')+C(6,15,2.2,'#8a5a3a')+C(10,12,2.2,'#8a5a3a')+C(14.5,13.5,2.2,'#8a5a3a')+E(22,14,4,3.5,'#8a5a3a')+C(18.5,8,1.9,'#8a5a3a')+C(22,5.5,1.9,'#8a5a3a')+C(26,7,1.9,'#8a5a3a')),
+  };
+  ANIM['🐈']=ANIM['🐱'];ANIM['🐉']=ANIM['🐲'];
+  const I={
+   '🪙':s(C(16,16,13,'#e6a400')+C(16,15,12,'#ffcf2e')+C(16,15,8.5,'none',' stroke="#f0ae0a" stroke-width="2"')+P('M14 10.5h3.5v9','none',' stroke="#c47f00" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"')+hl(11,8,4,2)),
+   '🌻':s(`<g fill="#ffcf2e" stroke="#e8a400" stroke-width=".8">${[0,30,60,90,120,150,180,210,240,270,300,330].map(a=>`<ellipse cx="16" cy="5.5" rx="3" ry="5" transform="rotate(${a} 16 16)"/>`).join('')}</g>`+C(16,16,6,'#7a4a12')+C(16,16,4,'#5a340a')+C(14.5,14.5,1,'#a8722a')+C(17.5,16.5,1,'#a8722a')),
+   '🔒':s(L('M10 14v-4a6 6 0 0 1 12 0v4','#9aa3b4',3)+R(6,13,20,16,4,'#ffc61a')+R(6,24,20,5,2,'#e6a400')+C(16,19.5,2.5,'#7a5200')+R(15,20,2,5,1,'#7a5200')+hl(11,16,3,1.5)),
+   '🔓':s(L('M10 14v-4a6 6 0 0 1 11.5-2','#9aa3b4',3)+R(6,13,20,16,4,'#7dd36a')+R(6,24,20,5,2,'#4fae4a')+C(16,19.5,2.5,'#2a6a2a')+R(15,20,2,5,1,'#2a6a2a')),
+   '🛡️':s(P('M16 2l12 4v8c0 8-5 13-12 16C9 27 4 22 4 14V6z','#3a86ff')+P('M16 2l12 4v8c0 8-5 13-12 16z','#2a6ad9')+P('M16 6l8 3v5c0 5-3 9-8 11c-5-2-8-6-8-11V9z','#7fb2ff')+star(16,15,5,'#fff')),
+   '✨':s(P('M13 3l2.5 7.5L23 13l-7.5 2.5L13 23l-2.5-7.5L3 13l7.5-2.5z','#ffd24a')+P('M24 18l1.3 3.7L29 23l-3.7 1.3L24 28l-1.3-3.7L19 23l3.7-1.3z','#ffe88a')+P('M25 3l.9 2.6 2.6.9-2.6.9L25 10l-.9-2.6-2.6-.9 2.6-.9z','#fff2b0')),
+   '🧲':s(P('M6 4h7v11a3 3 0 0 0 6 0V4h7v11a10 10 0 0 1-20 0z','#e8343a')+R(6,4,7,5,1,'#d6dbe6')+R(19,4,7,5,1,'#d6dbe6')+P('M9 15a7 7 0 0 0 14 0','none',' stroke="#ff7a7a" stroke-width="1.5" opacity=".6"')),
+   '♻️':s(P('M16 4l5 8h-3.5l-1.5-2.4-4.5 7.6-3.5-2z','#2fbf71')+P('M27 22l-4.6 8-1.8-3H18v-4h4.6l1.8 3 .6-1z','#2fbf71')+P('M5 22l4.5-7.8 3 1.8-3.2 5.5h3.2v4H6z','#2fbf71')+L('M21 13l3 5M19 27h-5M8 19l2.5-4.5','#27a862',2.4)),
+   '🔥':s(P('M16 2c2 5 9 8 9 17a9 9 0 0 1-18 0c0-5 3-7 4-11c1 3 3 4 3 4c1-4 0-7 2-10z','#ff6a1a')+P('M16 13c1 3 5 5 5 9a5 5 0 0 1-10 0c0-3 2-4 3-6c.5 1.5 1.5 2 1.5 2c.5-2 0-3 .5-5z','#ffcf2e')+P('M16 21c.6 1.4 2 2 2 3.5a2 2 0 0 1-4 0c0-1.2 1-2 2-3.5z','#fff3b0')),
+   '⭐':s(star(16,16.5,14,'#ffc61a','#e09a00')+P('M16 5l-3 7-7 1 4 3','none',' stroke="#fff" stroke-width="1.5" opacity=".5" stroke-linecap="round"')),
+   '🌟':s(C(16,16,14,'#ffe88a',' opacity=".45"')+star(16,16.5,12,'#ffd24a','#f0ae0a')+C(16,16,3,'#fff6c8')),
+   '💫':s(L('M5 20q2-12 14-12q9 1 9 8q-1 7-9 6q-6-1-5-6q1-4 5-3','#ffd24a',2.5)+star(7,20,4,'#ffd24a')),
+   '🌠':s(P('M3 29L19 13','none',' stroke="#ffe88a" stroke-width="4" stroke-linecap="round" opacity=".6"')+star(22,10,8,'#ffd24a','#f0ae0a')),
+   '🎵':s(P('M12 25V7l14-3v17','none',' stroke="#9b5de5" stroke-width="2.6" stroke-linejoin="round"')+E(9,25,4.5,3.5,'#9b5de5',' transform="rotate(-20 9 25)"')+E(23,22,4.5,3.5,'#9b5de5',' transform="rotate(-20 23 22)"')+P('M12 7l14-3v4l-14 3z','#9b5de5')),
+   '🎶':null,
+   '🏆':s(P('M9 3h14v9a7 7 0 0 1-14 0z','#ffc61a')+P('M9 6H4v2a6 6 0 0 0 6 6M23 6h5v2a6 6 0 0 1-6 6','none',' stroke="#e6a400" stroke-width="2.4"')+R(14,18,4,5,1,'#e6a400')+R(9,23,14,6,2,'#c47f00')+R(11,24.5,10,2.5,1,'#ffe066')+hl(12,7,2,3)),
+   '🎟️':s(P('M3 8h26v5a3 3 0 0 0 0 6v5H3v-5a3 3 0 0 0 0-6z','#ff5d8f')+P('M20 9v2M20 14v4M20 21v2','none',' stroke="#fff" stroke-width="1.8" stroke-linecap="round"')+star(11.5,16,4.5,'#ffe066')),
+   '⏱️':s(R(13,1,6,4,1.5,'#7a8396')+C(16,18,12,'#7a8396')+C(16,18,10,'#fff')+L('M16 18V11M16 18l4 3','#e8343a',2.4)+P('M24 8l3-3','none',' stroke="#7a8396" stroke-width="3" stroke-linecap="round"')),
+   '⏳':s(R(6,2,20,3,1.5,'#8a5a32')+R(6,27,20,3,1.5,'#8a5a32')+P('M8 5h16q0 8-6 11q6 3 6 11H8q0-8 6-11q-6-3-6-11z','#cfe8ff',' stroke="#8ab4d8" stroke-width="1"')+P('M11 8h10q-1 4-5 6q-4-2-5-6zM10 26q2-5 6-6q4 1 6 6z','#ffcf2e')),
+   '🎁':s(R(4,12,24,17,3,'#ff5d8f')+R(3,8,26,6,2,'#ff7aa2')+R(14,8,4,21,1,'#ffd24a')+P('M16 8q-6-8-9-3q0 3 9 3zM16 8q6-8 9-3q0 3-9 3z','none',' stroke="#ffd24a" stroke-width="2.4" stroke-linejoin="round"')+hl(9,10,3,1)),
+   '🚀':s(P('M16 2q7 5 7 15l-3 6h-8l-3-6q0-10 7-15z','#f4f6fb')+P('M16 2q7 5 7 15l-3 6h-4z','#dfe3ec')+P('M9 17l-5 7 6-2zM23 17l5 7-6-2z','#e8343a')+C(16,12,3,'#3a86ff')+C(15,11,1,'#fff')+P('M13 23h6l-3 8z','#ffb21a')+P('M14.5 23h3l-1.5 4z','#fff3b0')),
+   '⚔️':s(P('M5 3l15 15-2 2L3 5V3z','#d6dbe6')+P('M27 3L12 18l2 2L29 5V3z','#c3c8d6')+P('M19 17l4 4-2 2-4-4zM13 17l-4 4 2 2 4-4z','#8a5a32')+R(20,21,4,7,1.5,'#6b4424',' transform="rotate(-45 22 24)"')+R(8,21,4,7,1.5,'#6b4424',' transform="rotate(45 10 24)"')),
+   '🎉':s(P('M3 29l7-20 13 13z','#ffb21a')+P('M3 29l3.5-10 6.5 6.5z','#ff8c42')+L('M14 8q2-4 6-3M20 12q4-2 7 1M17 3l1 3M26 7l3-1M24 17l4 1','#ff5d8f',2)+C(22,4,1.5,'#3a86ff')+C(28,12,1.5,'#7dd36a')+C(12,4,1.2,'#c86bff')),
+   '🎬':s(R(3,12,26,17,3,'#2a2d36')+P('M3 6l25-3 1 7-25 3z','#2a2d36')+P('M7 5.5l3 6M13 4.8l3 6M19 4l3 6','none',' stroke="#fff" stroke-width="2.2"')+R(6,16,20,2,1,'#fff',' opacity=".2"')+P('M14 19v7l6-3.5z','#fff')),
+   '👆':s(P('M12 15V5a2.5 2.5 0 0 1 5 0v8l6 1q3 1 3 4l-1 6q-1 5-6 5h-4q-3 0-5-3l-3-6q-1-2 1-3q2-1 4 2z','#ffcf9a',' stroke="#c8865a" stroke-width="1.2"')),
+   '👇':null,
+   '👋':s(P('M9 18l-3-8a2 2 0 0 1 4-1l3 6-1-11a2 2 0 0 1 4 0l1 9 1-8a2 2 0 0 1 4 1l-1 9 2-5a2 2 0 0 1 4 1l-3 10q-2 8-9 8q-5 0-7-6z','#ffcf9a',' stroke="#c8865a" stroke-width="1.2"')+L('M3 6q-1 3 1 5M27 26q2-1 3-4','#c8865a',1.4)),
+   '🤝':s(P('M2 14l6-6 6 3 4-2 6 4 6-2v8l-6 6-8 3-5-3-3-1-6-6z','#ffcf9a',' stroke="#c8865a" stroke-width="1.2"')+L('M10 17l4 4M13 15l4 4M16 13l4 4','#c8865a',1.3)),
+   '💪':s(P('M6 28q-3-10 4-15l4-8q2-3 5-1l1 3-3 6q5-1 8 3q4 6-1 11q-6 3-18 1z','#ffcf9a',' stroke="#c8865a" stroke-width="1.2"')+L('M15 19q3-2 6 0','#c8865a',1.3)),
+   '💎':s(P('M8 4h16l6 8-14 17L2 12z','#5ad1ff')+P('M2 12h28L16 29z','#2fa8e0')+P('M8 4l3 8h10l3-8M11 12l5 17 5-17','none',' stroke="#bff0ff" stroke-width="1.2"')+P('M10 6l2 5','none',' stroke="#fff" stroke-width="1.5" opacity=".8"')),
+   '🧪':s(P('M12 3h8M13 3v9L5 25a3 3 0 0 0 3 4h16a3 3 0 0 0 3-4l-8-13V3','#e6f6ff',' stroke="#7a8396" stroke-width="2" stroke-linejoin="round"')+P('M9 19h14l3 6a2 2 0 0 1-2 3H8a2 2 0 0 1-2-3z','#2fd0a0')+C(13,23,1.3,'#bfffea')+C(18,21,1,'#bfffea')),
+   '❤️':s(P('M16 28L4.5 17a7 7 0 0 1 11.5-8a7 7 0 0 1 11.5 8z','#ff3b5c')+hl(9.5,11,3,2)),
+   '💜':s(P('M16 28L4.5 17a7 7 0 0 1 11.5-8a7 7 0 0 1 11.5 8z','#a259ff')+hl(9.5,11,3,2)),
+   '🧱':s(R(2,5,28,22,2,'#d8cfc4')+R(3,6,12,6,1,'#c45538')+R(17,6,12,6,1,'#b84a32')+R(3,13,6,6,1,'#a8402a')+R(10,13,12,6,1,'#c45538')+R(23,13,6,6,1,'#b84a32')+R(3,20,12,6,1,'#b84a32')+R(17,20,12,6,1,'#a8402a')),
+   '🗺️':s(P('M3 7l8-3 10 3 8-3v21l-8 3-10-3-8 3z','#bfe6a8')+P('M11 4v21M21 7v21','none',' stroke="#8ec27a" stroke-width="1.5"')+P('M6 18q4-6 9-2t9-5','none',' stroke="#e8343a" stroke-width="1.8" stroke-dasharray="2 2"')+C(24,11,2,'#e8343a')),
+   '🎪':s(P('M16 2l13 12H3z','#ff5d8f')+P('M16 2l-4 12h8z','#fff')+R(5,14,22,15,1,'#fff')+P('M5 14h6v15H5zM16 14h5v15h-5z','#ff5d8f')+P('M12 29q4-9 8 0z','#5a2a6a')+P('M16 2V-1','none',' stroke="#8a5a32" stroke-width="1.5"')),
+   '🏘️':s(P('M2 16l7-6 7 6v12H2z','#fff1d6')+P('M1 16l8-7 8 7','none',' stroke="#d0503a" stroke-width="3" stroke-linejoin="round"')+P('M15 13l8-7 8 7v15H15z','#ffe0b8')+P('M14 13l9-8 9 8','none',' stroke="#a8392a" stroke-width="3" stroke-linejoin="round"')+R(6,21,4,7,1,'#7a4a26')+R(20,19,6,5,1,'#8fd3ff')),
+   '🔄':s(P('M26 13a10 10 0 0 0-19-3','none',' stroke="#3a86ff" stroke-width="3.2" stroke-linecap="round"')+P('M6 19a10 10 0 0 0 19 3','none',' stroke="#3a86ff" stroke-width="3.2" stroke-linecap="round"')+P('M27 5v8h-8zM5 27v-8h8z','#3a86ff')),
+   '💥':s(P('M16 1l3 8 8-4-3 8 8 3-8 3 3 8-8-4-3 8-3-8-8 4 3-8-8-3 8-3-3-8 8 4z','#ff6a1a')+P('M16 7l2 5 5-2-2 5 5 1-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-1-2-5 5 2z','#ffd24a')),
+   '💰':s(P('M12 6h8l-2 4q9 3 9 12q0 7-11 7T5 22q0-9 9-12z','#e6b35a')+P('M12 6h8l-2 4h-4z','#c8923a')+L('M11 6q5-4 10 0','#8a5a32',2)+P('M16 14v12M19 16.5q-1-2-3-2t-3 2t3 3t3 3t-3 2t-3-2','none',' stroke="#7a4a12" stroke-width="2" stroke-linecap="round"')),
+   '🎓':s(P('M16 5l15 7-15 7L1 12z','#2a2d36')+P('M8 15.5v6q8 5 16 0v-6l-8 3.5z','#3a3f4c')+P('M27 13v8','none',' stroke="#ffd24a" stroke-width="1.6"')+C(27,22,1.8,'#ffd24a')),
+   '🐞':s(E(16,19,11,10,'#e8343a')+P('M16 9v20','none',' stroke="#2a1a1a" stroke-width="1.6"')+C(16,8,5,'#2a1a1a')+C(10,16,2,'#2a1a1a')+C(22,16,2,'#2a1a1a')+C(11,23,2,'#2a1a1a')+C(21,23,2,'#2a1a1a')+C(14,7,1,'#fff')+C(18,7,1,'#fff')+L('M13 4l-2-3M19 4l2-3','#2a1a1a',1.3)),
+   '🏁':s(P('M6 3v27','none',' stroke="#5a6285" stroke-width="2.5" stroke-linecap="round"')+P('M7 4h20v14H7z','#fff')+P('M7 4h5v3.5H7zM17 4h5v3.5h-5zM12 7.5h5V11h-5zM22 7.5h5V11h-5zM7 11h5v3.5H7zM17 11h5v3.5h-5zM12 14.5h5V18h-5zM22 14.5h5V18h-5z','#1d2340')),
+   '🚩':s(P('M7 3v27','none',' stroke="#5a6285" stroke-width="2.5" stroke-linecap="round"')+P('M8 4h18l-4 6 4 6H8z','#e8343a')),
+   '📅':s(R(3,5,26,24,4,'#fff',' stroke="#c9ced6" stroke-width="1"')+P('M3 9a4 4 0 0 1 4-4h18a4 4 0 0 1 4 4v4H3z','#e8343a')+R(9,2,3,6,1.5,'#5a6285')+R(20,2,3,6,1.5,'#5a6285')+'<text x="16" y="25" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#1d2340" text-anchor="middle">17</text>'),
+   '📆':null,
+   '🔊':s(P('M4 12h6l8-7v22l-8-7H4z','#5a6285')+L('M22 11q3 5 0 10M25 8q5 8 0 16','#3a86ff',2.4)),
+   '🔇':s(P('M4 12h6l8-7v22l-8-7H4z','#5a6285')+L('M22 12l7 8M29 12l-7 8','#e8343a',2.6)),
+   '📳':s(R(10,3,12,26,3,'#2a2d36')+R(12,6,8,18,1,'#5ad1ff')+L('M5 10l-2 3 2 3-2 3 2 3M27 10l2 3-2 3 2 3-2 3','#ff8c42',1.8)),
+   '📴':s(R(10,3,12,26,3,'#2a2d36')+R(12,6,8,18,1,'#5a6285')+L('M6 6l20 20','#e8343a',2.6)),
+   '🔔':s(P('M16 3a8 8 0 0 1 8 8v7l3 5H5l3-5v-7a8 8 0 0 1 8-8z','#ffc61a')+P('M5 23h22v2H5z','#e6a400')+C(16,27,3,'#e6a400')+hl(12,9,2,3)),
+   '👑':s(P('M3 10l6 6 7-11 7 11 6-6-3 17H6z','#ffc61a')+R(6,24,20,4,1,'#e6a400')+C(16,17,2.4,'#e8343a')+C(9,20,1.6,'#3a86ff')+C(23,20,1.6,'#3a86ff')+C(3,10,2,'#ffc61a')+C(29,10,2,'#ffc61a')+C(16,5,2,'#ffc61a')),
+   '⚠️':s(P('M16 3l14 25H2z','#ffc61a',' stroke="#e6a400" stroke-width="1.5" stroke-linejoin="round"')+R(14.6,11,2.8,9,1.4,'#1d2340')+C(16,24,1.7,'#1d2340')),
+   '💡':s(C(16,13,10,'#ffe066')+P('M11 20h10l-1 4h-8z','#ffe066')+R(11,24,10,3,1,'#9aa3b4')+R(12,27,8,2.5,1,'#7a8396')+L('M13 18q3-6 6 0','#e6a400',1.5)+hl(12,9,3,2)),
+   '📸':s(R(2,9,28,19,4,'#5a6285')+R(10,5,10,6,2,'#5a6285')+C(16,18,7,'#2a2d36')+C(16,18,4.5,'#3a86ff')+C(14.5,16.5,1.5,'#fff')+C(25,13,1.5,'#ffd24a')+L('M27 3l2-2M29 6h2','#ffd24a',1.5)),
+   '🥇':null,'🥈':null,'🥉':null,
+   '🏅':null,
+   '🎯':s(C(16,16,14,'#e8343a')+C(16,16,10.5,'#fff')+C(16,16,7,'#e8343a')+C(16,16,3.5,'#fff')+P('M16 16l12-12','none',' stroke="#5a6285" stroke-width="2"')+P('M24 4h4v4l-3 1-2-2z','#3a86ff')),
+   '❓':s(C(16,16,14,'#3a86ff')+P('M11.5 12a4.5 4.5 0 1 1 6.5 4q-2 1.2-2 3.5','none',' stroke="#fff" stroke-width="3" stroke-linecap="round"')+C(16,24,1.8,'#fff')),
+   '✅':s(R(3,3,26,26,7,'#2fbf71')+L('M9 16l5 5 9-10','#fff',3.4)),
+   '❌':s(R(3,3,26,26,7,'#e8343a')+L('M10 10l12 12M22 10L10 22','#fff',3.4)),
+   '🛒':s(P('M2 5h4l4 15h15l3-11H8','none',' stroke="#5a6285" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"')+P('M9 9h18l-2.4 9H11z','#ff8fb8')+C(12,26,2.5,'#5a6285')+C(23,26,2.5,'#5a6285')),
+   '⚙️':s(`<g fill="#7a8396">${[0,45,90,135].map(a=>`<rect x="13.5" y="2" width="5" height="28" rx="1.5" transform="rotate(${a} 16 16)"/>`).join('')}</g>`+C(16,16,10,'#7a8396')+C(16,16,4.5,'#e6e9ee')),
+   '📋':s(R(5,4,22,26,3,'#c8923a')+R(8,7,16,21,1.5,'#fff')+R(11,2,10,5,2,'#7a8396')+L('M11 13h10M11 18h10M11 23h6','#9aa3b4',1.8)),
+   '💬':s(P('M4 6h24a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H13l-7 6v-6H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z','#fff',' stroke="#9aa3b4" stroke-width="1.5"')+C(10,14.5,1.8,'#5a6285')+C(16,14.5,1.8,'#5a6285')+C(22,14.5,1.8,'#5a6285')),
+   '📧':s(R(3,7,26,19,3,'#fff',' stroke="#9aa3b4" stroke-width="1.5"')+L('M4 9l12 9 12-9','#3a86ff',2)),
+   '🎲':s(R(4,4,24,24,6,'#fff',' stroke="#c9ced6" stroke-width="1.5"')+C(10,10,2.4,'#e8343a')+C(16,16,2.4,'#1d2340')+C(22,22,2.4,'#1d2340')+C(22,10,2.4,'#1d2340')+C(10,22,2.4,'#1d2340')),
+   '💱':s(C(16,16,14,'#2fbf71')+L('M9 12h13l-3-3M23 20H10l3 3','#fff',2.6)),
+   '🛠️':s(P('M20 3a7 7 0 0 0-6 9L3 23l6 6 11-11a7 7 0 0 0 9-6l-4 1-3-3 1-4z','#9aa3b4')+P('M3 6l3-3 10 10-3 3z','#8a5a32')+R(4,2,5,4,1,'#5a6285',' transform="rotate(-45 6.5 4)"')),
+   '⏸️':s(R(3,3,26,26,7,'#5a6285')+R(10,9,4,14,1.5,'#fff')+R(18,9,4,14,1.5,'#fff')),
+   '⏭️':s(R(3,3,26,26,7,'#5a6285')+P('M8 10l7 6-7 6zM15 10l7 6-7 6z','#fff')+R(22,10,2.5,12,1,'#fff')),
+   '📏':s(R(2,11,28,10,2,'#ffd24a',' transform="rotate(-30 16 16)"')+P('M8 19l-1-2.5M12 16.5l-1.5-3.5M16 14l-1-2.5M20 11.5l-1.5-3.5M24 9l-1-2.5','none',' stroke="#8a6a00" stroke-width="1.4"')),
+   '🔴':s(C(16,16,12,'#e8343a')+hl(12,11,4,2.5)),'🟠':s(C(16,16,12,'#ff8c42')+hl(12,11,4,2.5)),'🔵':s(C(16,16,12,'#3a86ff')+hl(12,11,4,2.5)),
+   '🟩':s(R(4,4,24,24,5,'#2fbf71')),'🟦':s(R(4,4,24,24,5,'#3a86ff')),'🟧':s(R(4,4,24,24,5,'#ff8c42')),'🟪':s(R(4,4,24,24,5,'#9b5de5')),'⬛':s(R(4,4,24,24,5,'#2a2d36')),
+   '🔻':s(P('M5 8h22L16 26z','#e8343a')),
+   '💤':s('<g font-family="Arial,sans-serif" font-weight="900" fill="#7fb2ff"><text x="4" y="28" font-size="14">Z</text><text x="14" y="19" font-size="11">Z</text><text x="22" y="11" font-size="8">Z</text></g>'),
+   '👀':s(E(10,16,7,9,'#fff',' stroke="#c9ced6"')+E(22,16,7,9,'#fff',' stroke="#c9ced6"')+C(12,17,3.5,'#1d2340')+C(24,17,3.5,'#1d2340')+C(13,15.5,1,'#fff')+C(25,15.5,1,'#fff')),
+   '👁️':s(P('M2 16q14-14 28 0q-14 14-28 0z','#fff',' stroke="#9aa3b4" stroke-width="1.5"')+C(16,16,6,'#3a86ff')+C(16,16,3,'#1d2340')+C(14.5,14.5,1.2,'#fff')),
+   '🚫':s(C(16,16,13,'none',' stroke="#e8343a" stroke-width="4"')+P('M7 7l18 18','none',' stroke="#e8343a" stroke-width="4"')),
+   '💣':s(C(14,19,11,'#2a2d36')+R(17,5,6,6,1.5,'#5a6285',' transform="rotate(45 20 8)"')+L('M22 6q3-4 6-2','#c8923a',1.6)+P('M28 2l1 2 2 .5-2 .8-.6 2-1-1.8-2-.4 1.8-1z','#ffd24a')+hl(10,15,3,2)),
+   '💧':s(P('M16 3q10 12 10 18a10 10 0 0 1-20 0q0-6 10-18z','#3aa8ff')+hl(12,19,2,3.5)),
+   '🫧':s(C(12,18,8,'#bfe6ff',' stroke="#5ac8ff" stroke-width="1.5" fill-opacity=".4"')+C(23,9,5,'#bfe6ff',' stroke="#5ac8ff" stroke-width="1.5" fill-opacity=".4"')+C(24,24,3,'#bfe6ff',' stroke="#5ac8ff" stroke-width="1.2" fill-opacity=".4"')+hl(9,15,2,1.4)),
+   '⚡':s(P('M19 2L6 18h8l-3 12 15-17h-9z','#ffc61a',' stroke="#e6a400" stroke-width="1.2" stroke-linejoin="round"')),
+   '🍽️':s(C(16,16,11,'#fff',' stroke="#c9ced6" stroke-width="1.5"')+C(16,16,7,'none',' stroke="#e6e9ee" stroke-width="1.5"')+L('M3 5v9M1.5 5v5M4.5 5v5M3 14v14M29 5q-3 3-2 9h2v14','#7a8396',1.4)),
+   '💼':s(R(3,9,26,19,3,'#8a5a32')+P('M12 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3','none',' stroke="#6b4424" stroke-width="2.2"')+R(3,15,26,3,0,'#6b4424')+R(14,14,4,5,1,'#ffd24a')),
+   '🧸':s(C(8,7,4,'#c8823a')+C(24,7,4,'#c8823a')+C(16,12,8,'#c8823a')+E(16,24,9,7,'#c8823a')+E(16,15,4,3,'#f2cfa0')+C(13,11,1.3,'#1d1d24')+C(19,11,1.3,'#1d1d24')+C(16,14,1.3,'#3a2416')+E(16,25,4.5,4,'#f2cfa0')+C(8,7,2,'#f2cfa0')+C(24,7,2,'#f2cfa0')),
+   '☕':s(P('M5 11h18v9a8 8 0 0 1-8 8h-2a8 8 0 0 1-8-8z','#fff',' stroke="#c9ced6"')+P('M23 13h2a4 4 0 0 1 0 8h-2','none',' stroke="#c9ced6" stroke-width="2.4"')+E(14,11,9,2,'#7a4a26')+L('M11 3q2 2 0 5M16 2q2 2 0 5','#c9ced6',1.5)),
+   '📺':s(R(2,7,28,19,3,'#2a2d36')+R(5,10,22,13,2,'#5ad1ff')+L('M11 2l5 5 5-5','#7a8396',1.8)+hl(10,13,4,2)),
+   '📻':s(R(2,10,28,18,3,'#c8823a')+C(10,19,5.5,'#2a2d36')+C(10,19,3,'#5a6285')+R(18,14,9,2,1,'#2a2d36')+R(18,18,9,2,1,'#2a2d36')+R(18,22,9,2,1,'#2a2d36')+L('M8 10L24 3','#7a8396',1.6)),
+   '🏦':s(P('M16 2l14 7H2z','#c9ced6')+R(4,10,24,2,0,'#9aa3b4')+R(6,13,3,11,0,'#e6e9ee')+R(12,13,3,11,0,'#e6e9ee')+R(18,13,3,11,0,'#e6e9ee')+R(24,13,3,11,0,'#e6e9ee')+R(3,25,26,4,1,'#9aa3b4')),
+   '🪩':s(L('M16 1v4','#7a8396',1.5)+C(16,17,12,'#c9ced6')+'<g stroke="#9aa3b4" stroke-width=".8" fill="none"><path d="M4 17h24M16 5v24M6 11h20M6 23h20M10 6q-3 11 0 22M22 6q3 11 0 22"/></g>'+C(11,12,2,'#fff')+C(21,20,1.4,'#ff8fb8')+C(13,22,1.4,'#5ad1ff')),
+   '🎤':s(R(11,2,10,15,5,'#5a6285')+'<g stroke="#9aa3b4" stroke-width=".8"><path d="M11 6h10M11 9h10M11 12h10"/></g>'+P('M7 13a9 9 0 0 0 18 0','none',' stroke="#7a8396" stroke-width="2.2"')+R(15,22,2,6,1,'#7a8396')+R(10,28,12,2.5,1,'#7a8396')),
+   '🎸':s(P('M10 18q-6-1-7 5q0 6 6 6q5-1 5-6q4 0 4-4q-1-4-8-1z','#e8823a')+C(9,23,2,'#5a2a10')+P('M13 19L28 4','none',' stroke="#8a5a32" stroke-width="3"')+R(26,1,5,5,1.5,'#5a3418',' transform="rotate(45 28.5 3.5)"')),
+   '🎹':s(R(2,8,28,17,2,'#fff',' stroke="#5a6285" stroke-width="1.5"')+R(2,8,28,4,1,'#2a2d36')+'<g fill="#1d1d24"><rect x="6" y="12" width="2.6" height="7"/><rect x="10.5" y="12" width="2.6" height="7"/><rect x="18" y="12" width="2.6" height="7"/><rect x="22.5" y="12" width="2.6" height="7"/></g>'+'<g stroke="#c9ced6" stroke-width=".8"><path d="M9.5 19v6M14 19v6M18 19v6M22.5 19v6M27 19v6"/></g>'),
+   '🥁':s(E(16,11,12,4.5,'#f4f1ea')+P('M4 11v10q12 8 24 0V11q-12 8-24 0z','#e8343a')+L('M4 13l6 9 6-9 6 9 6-9','#ffd24a',1.3)+L('M7 3l8 7M25 3l-8 7','#c8923a',2)),
+   '🎠':s(L('M16 2v28','#ffd24a',2)+P('M5 13q3-3 7-1l4-2q5 0 7 4l3-1-1 4q-3 2-6 1l-1 6h-2l-1-5h-4l-1 5H8l-1-6q-3-1-2-5z','#fff',' stroke="#c9ced6"')+P('M18 10q3-2 4 1','none',' stroke="#ff5d8f" stroke-width="2.4"')+C(22,13,.9,'#1d1d24')),
+   '🎡':s(C(16,14,11,'none',' stroke="#ff5d8f" stroke-width="2"')+'<g stroke="#ffb3cf" stroke-width="1"><path d="M16 3v22M5 14h22M8 6l16 16M24 6L8 22"/></g>'+L('M10 30l6-16 6 16','#7a8396',2)+C(16,3,2.2,'#ffd24a')+C(5,14,2.2,'#3ad1ff')+C(27,14,2.2,'#7dd36a')+C(8,22,2.2,'#c86bff')+C(24,22,2.2,'#ff8c42')+C(16,14,2,'#5a6285')),
+   '🎈':s(E(16,12,9,10.5,'#ff3b5c')+P('M14.5 22h3L16 24.5z','#d9284a')+L('M16 24q-3 3 0 7','#9aa3b4',1.2)+hl(12,8,2.5,3.5)),
+   '🪁':s(P('M16 2l10 11-10 15L6 13z','#3a86ff')+P('M16 2l10 11H6z','#ff5d8f')+P('M16 2v26M6 13h20','none',' stroke="#fff" stroke-width="1"')+L('M16 28q-3 2 0 4','#9aa3b4',1)),
+   '✂️':s(C(8,24,4,'none',' stroke="#e8343a" stroke-width="2.6"')+C(24,24,4,'none',' stroke="#e8343a" stroke-width="2.6"')+P('M10 21L24 3M22 21L8 3','none',' stroke="#9aa3b4" stroke-width="2.6" stroke-linecap="round"')),
+   '🍀':s(`<g fill="#3cbf5a">${[0,90,180,270].map(a=>`<path d="M16 15q-8-9 0-12q8 3 0 12z" transform="rotate(${a} 16 16)"/>`).join('')}</g>`+L('M16 16q2 8 6 13','#2f8f4a',2)),
+   '🌱':s(L('M16 29V15','#4aa84a',2.4)+P('M16 16q-11 0-11-9q10 0 11 9z','#7dd36a')+P('M16 14q10-1 11-9q-10-1-11 9z','#5fbf5a')+R(9,27,14,3,1.5,'#8a5a32')),
+   '🌾':s(L('M16 30V8M10 30l3-15M22 30l-3-15','#c8923a',1.6)+`<g fill="#f2c14e">${[4,8,12].map(y=>`<ellipse cx="14" cy="${y+2}" rx="1.6" ry="3" transform="rotate(-25 14 ${y+2})"/><ellipse cx="18" cy="${y+2}" rx="1.6" ry="3" transform="rotate(25 18 ${y+2})"/>`).join('')}</g>`),
+   '🌼':s(`<g fill="#fff8d6" stroke="#f2d27a" stroke-width=".6">${[0,40,80,120,160,200,240,280,320].map(a=>`<ellipse cx="16" cy="7" rx="3.4" ry="6" transform="rotate(${a} 16 16)"/>`).join('')}</g>`+C(16,16,4.5,'#ffc61a')),
+   '🌸':s(`<g fill="#ffb3cf">${[0,72,144,216,288].map(a=>`<path d="M16 15q-6-6-3-11q3 1 3 3q0-2 3-3q3 5-3 11z" transform="rotate(${a} 16 16)"/>`).join('')}</g>`+C(16,16,3,'#ff7aa2')+C(16,16,1.3,'#ffe066')),
+   '🌺':s(`<g fill="#ff4d6d">${[0,72,144,216,288].map(a=>`<ellipse cx="16" cy="8" rx="5.5" ry="7.5" transform="rotate(${a} 16 16)"/>`).join('')}</g>`+L('M16 16l7-7','#ffd24a',1.5)+C(23,9,1.5,'#ffd24a')+C(16,16,2.5,'#c8102e')),
+   '🌷':null,'🌳':null,'🌲':s(R(14.5,24,3,6,1,'#7a4a26')+P('M16 2l7 9h-3l6 7h-4l6 7H4l6-7H6l6-7H9z','#2f8f4a')+P('M16 2l7 9h-3l6 7h-4l6 7H16z','#24733a')),
+   '🌴':s(P('M15 30q2-10 0-18h2q3 9 1 18z','#a8723a')+P('M16 12q-8-6-14-1q7-1 14 1zM16 12q8-6 14-1q-7-1-14 1zM16 12q-3-8-10-9q5 3 10 9zM16 12q3-8 10-9q-5 3-10 9z','#3cbf5a')+C(15,13,1.6,'#7a4a26')+C(18,13,1.6,'#7a4a26')),
+   '🌵':s(R(12,4,8,26,4,'#4aa84a')+P('M12 17H8a3 3 0 0 1-3-3V9a2 2 0 0 1 4 0v4h3zM20 20h4a3 3 0 0 0 3-3v-6a2 2 0 0 0-4 0v5h-3z','#4aa84a')+L('M16 7v20','#3a8a3a',1)+P('M14 4q2-3 4 0','#ff8fb8')),
+   '🪨':s(P('M3 26l4-12 8-7 9 3 5 9-2 7z','#9aa0a8')+P('M3 26l4-12 8-7 3 10-5 9z','#b7bcc4')+L('M15 7l3 10 9 1','#80868f',1.2)),
+   '🪵':s(R(3,9,24,14,7,'#a8723a')+E(27,16,4,7,'#e8c08a')+E(27,16,2.5,4.5,'none',' stroke="#c8923a" stroke-width="1"')+L('M6 14h14M8 19h12','#8a5a32',1.2)),
+   '🌋':s(P('M2 29l9-17h10l9 17z','#7a5a4a')+P('M11 12h10l-3 5q-2 3-4 0z','#ff6a1a')+P('M12 9q4-8 8 0','#ff8c42',' opacity=".8"')+C(14,4,2,'#9aa3b4',' opacity=".7"')+C(19,2.5,2.5,'#9aa3b4',' opacity=".6"')),
+   '🏔️':s(P('M1 29L12 8l5 8 4-5 10 18z','#7a8fae')+P('M12 8l4 7.6-2.5-1.6-1.5 2-2-2-1.6 1.2zM21 11l3.4 5.6-2-1-1.4 1.4-1.4-1.6z','#fff')),
+   '🏜️':s(R(0,22,32,10,0,'#e8c27a')+P('M0 24q8-6 16 0t16 0v8H0z','#d9a85a')+C(25,8,4,'#ffd24a')+R(7,12,3,12,1.5,'#4aa84a')+P('M7 17H5v-3a1 1 0 0 1 2 0zM10 19h2v-4a1 1 0 0 0-2 0z','#4aa84a')),
+   '🏖️':s(R(0,21,32,11,0,'#f3d9a1')+P('M0 22q8-3 16 0t16 0v-6H0z','#4ab8e8')+L('M18 30l4-20','#8a5a32',1.6)+P('M10 12q12-10 22 0z','#ff5d8f')+P('M16 7q6-5 10 5','none',' stroke="#fff" stroke-width="2"')),
+   '🏝️':s(E(16,26,14,4,'#4ab8e8')+E(16,24,9,3,'#f3d9a1')+P('M15 24q2-8 0-14h2q3 8 1 14z','#a8723a')+P('M16 10q-7-5-12-1q6-1 12 1zM16 10q7-5 12-1q-6-1-12 1zM16 10q-2-6-8-7q4 2 8 7z','#3cbf5a')),
+   '🌊':s(P('M2 22q4-10 12-10q8 0 8 7q-4-4-7 0q4 1 6 4q5 2 9-3v12H2z','#3a86ff')+P('M14 12q8 0 8 7q-4-4-7 0','none',' stroke="#fff" stroke-width="2"')+P('M2 27q7-3 14 0t14 0','none',' stroke="#7fc8ff" stroke-width="2"')),
+   '❄️':s('<g stroke="#5ac8ff" stroke-width="2.6" stroke-linecap="round" fill="none">'+[0,60,120].map(a=>`<g transform="rotate(${a} 16 16)"><path d="M16 2v28M12 5l4 4 4-4M12 27l4-4 4 4"/></g>`).join('')+'</g>'),
+   '☁️':s(P('M8 25a6 6 0 0 1-1-12a8 8 0 0 1 15-3a6 6 0 0 1 4 11a4 4 0 0 1-3 4z','#fff',' stroke="#c9d9ef" stroke-width="1.4"')),
+   '🌫️':s(L('M3 10h20M7 16h22M3 22h18M9 28h14','#b7c4d6',3)),
+   '⛈️':s(P('M8 18a6 6 0 0 1-1-12a8 8 0 0 1 15-2a6 6 0 0 1 4 11a4 4 0 0 1-3 3z','#8a93a6')+P('M15 16l-4 8h4l-2 7 7-10h-4l2-5z','#ffc61a')),
+   '🌪️':s(L('M3 5h26M6 11h20M9 17h14M12 23h8M15 29h3','#9aa3b4',3.2)),
+   '🌀':s(P('M16 16m-2 0a2 2 0 1 1 4 0a5 5 0 1 1-10 0a8 8 0 1 1 16 0a11 11 0 1 1-22 0','none',' stroke="#5a8cff" stroke-width="3" stroke-linecap="round"')),
+   '💨':s(L('M3 11h16a4 4 0 1 0-4-4M3 17h22a4 4 0 1 1-4 4M3 23h11','#9fd8ff',2.8)),
+   '☀️':s(`<g stroke="#ffb21a" stroke-width="2.6" stroke-linecap="round">${[0,45,90,135,180,225,270,315].map(a=>`<path d="M16 2v4" transform="rotate(${a} 16 16)"/>`).join('')}</g>`+C(16,16,8,'#ffcf2e')+hl(13,13,3,2)),
+   '🌙':s(P('M20 3a13 13 0 1 0 9 19a10 10 0 0 1-9-19z','#ffd24a')+C(12,20,1.6,'#e6b800')),
+   '🌕':s(C(16,16,13,'#f2eac0')+C(11,11,3,'#d9d0a0')+C(20,20,4,'#d9d0a0')+C(21,9,2,'#d9d0a0')),
+   '🌑':s(C(16,16,13,'#3a3f55')+C(11,11,3,'#2a2e40')+C(20,20,4,'#2a2e40')),
+   '🌍':s(C(16,16,13,'#3a9cff')+P('M7 8q5-2 6 3t-3 6q-3 1-3 5q-4-6 0-14zM18 5q7 1 9 8q-4 0-5 3t-4 2q-2-4 1-6t-1-7zM18 23q4-1 6 2q-3 3-7 3z','#5fbf5a')+hl(10,8,3,2)),
+   '🪐':s(C(16,16,9,'#e8b86a')+P('M7 14q9 3 18 0','none',' stroke="#d09a4a" stroke-width="2"')+E(16,16,15,4.5,'none',' stroke="#c9a6ff" stroke-width="2.4" transform="rotate(-20 16 16)"')),
+   '🌌':s(R(1,1,30,30,7,'#1b0d3a')+P('M2 22q12-14 28-14','none',' stroke="#c86bff" stroke-width="6" opacity=".5"')+P('M2 22q12-14 28-14','none',' stroke="#fff" stroke-width="1.5" opacity=".6"')+C(8,8,1,'#fff')+C(24,24,1.2,'#fff')+C(20,6,.8,'#fff')+C(6,26,.8,'#fff')),
+   '☄️':s(P('M4 4q8 14 14 18','none',' stroke="#ff8c42" stroke-width="5" stroke-linecap="round" opacity=".55"')+P('M8 4q6 12 10 16','none',' stroke="#ffd24a" stroke-width="2.5" stroke-linecap="round"')+C(21,22,6,'#8a7a6a')+C(19,20,1.5,'#6a5a4a')+C(23,24,1.2,'#6a5a4a')),
+   '🌅':s(R(0,0,32,20,0,'#ffb36b')+C(16,20,8,'#ffe066')+R(0,20,32,12,0,'#3a86ff')+L('M8 24h16M11 28h10','#ffe066',1.6)),
+   '🌆':s(R(0,0,32,32,6,'#ff9a6b')+'<g fill="#3a2a5a"><rect x="3" y="14" width="6" height="18"/><rect x="11" y="8" width="7" height="24"/><rect x="20" y="17" width="5" height="15"/><rect x="26" y="11" width="5" height="21"/></g>'+'<g fill="#ffe066"><rect x="13" y="11" width="2" height="2"/><rect x="13" y="16" width="2" height="2"/><rect x="5" y="18" width="2" height="2"/><rect x="28" y="15" width="1.6" height="2"/></g>'),
+   '🛸':s(E(16,12,6,5,'#7fdcff',' opacity=".85"')+E(16,17,14,5,'#9aa3b4')+E(16,16,14,3,'#c9ced6')+C(8,18,1.3,'#ffe066')+C(16,19.5,1.3,'#ffe066')+C(24,18,1.3,'#ffe066')+P('M11 21l-3 9h16l-3-9z','#7dffb0',' opacity=".35"')),
+   '👾':s(P('M6 6h4v3h12V6h4v4h3v12h-3v4h-4v-4H10v4H6v-4H3V10h3z','#9b5de5')+R(9,12,4,4,0,'#fff')+R(19,12,4,4,0,'#fff')+R(10.5,13.5,2,2,0,'#1d1d24')+R(20.5,13.5,2,2,0,'#1d1d24')),
+   '👽':s(P('M16 2q12 0 12 12q0 9-12 16q-12-7-12-16q0-12 12-12z','#7dd36a')+E(10.5,15,4,6,'#1d2340',' transform="rotate(-30 10.5 15)"')+E(21.5,15,4,6,'#1d2340',' transform="rotate(30 21.5 15)"')+E(16,24,2,.8,'#3a8a3a')),
+   '🛰️':s(R(12,12,8,8,2,'#c9ced6',' transform="rotate(45 16 16)"')+R(1,7,9,7,1,'#3a86ff',' transform="rotate(45 5.5 10.5)"')+R(22,18,9,7,1,'#3a86ff',' transform="rotate(45 26.5 21.5)"')+L('M8 8l3 3M21 21l3 3','#9aa3b4',1.6)+C(16,16,2,'#e8343a')),
+   '✈️':s(P('M15 2q2 0 2 3v8l12 6v3l-12-3v6l3 3v2l-5-1-5 1v-2l3-3v-6L3 22v-3l12-6V5q0-3 0-3z','#e6e9ee',' stroke="#9aa3b4" stroke-width="1"')),
+   '🛩️':null,
+   '🧑‍🚀':s(C(16,13,10,'#f4f6fb')+R(9,9,14,9,4.5,'#2a3a6a')+P('M12 11q4-2 8 0','none',' stroke="#7fdcff" stroke-width="1.6"')+R(7,22,18,9,4,'#f4f6fb')+R(13,24,6,4,1,'#e8343a')),
+   '🤖':s(L('M16 2v5','#9aa3b4',1.8)+C(16,2.5,2,'#e8343a')+R(5,7,22,18,5,'#c9ced6')+R(8,11,16,9,3,'#2a2d36')+C(12.5,15.5,2.2,'#5ad1ff')+C(19.5,15.5,2.2,'#5ad1ff')+R(2,13,3,6,1.5,'#9aa3b4')+R(27,13,3,6,1.5,'#9aa3b4')+R(10,26,12,4,2,'#9aa3b4')),
+   '🕳️':s(E(16,20,14,7,'#1d1d24')+E(16,19,11,5,'#000')),
+   '🎃':s(E(10,18,7,10,'#f28a1e')+E(22,18,7,10,'#f28a1e')+E(16,18,8,11,'#ff9a2e')+P('M15 7q0-4 3-5l1 2q-2 1-2 4z','#4a7a2a')+P('M10 14l3 3-4 1zM22 14l-3 3 4 1zM10 22q6 4 12 0l-2 2-2-1-2 2-2-2-2 1z','#5a2a0a')),
+   '👻':s(P('M5 30V14a11 11 0 0 1 22 0v16l-3.7-3-3.7 3-3.6-3-3.7 3-3.6-3z','#f4f6fb',' stroke="#c9d3e8" stroke-width="1.2"')+E(12,14,2.2,3,'#1d2340')+E(20,14,2.2,3,'#1d2340')+E(16,21,2.4,2.8,'#1d2340')),
+   '🎅':s(P('M5 14q2-12 16-10l7 6-3 2q-5-4-6-1z','#e8343a')+C(27,11,2.5,'#fff')+R(4,13,24,4,2,'#fff')+C(16,20,8,'#ffcf9a')+P('M7 21q9 14 18 0q-3 3-9 3t-9-3z','#fff')+C(13,19,1.2,'#1d1d24')+C(19,19,1.2,'#1d1d24')+E(16,22,2,1.4,'#ff8f8f')),
+   '⛄':s(C(16,22,9,'#fff',' stroke="#c9d9ef"')+C(16,10,6.5,'#fff',' stroke="#c9d9ef"')+R(10,1,12,5,1,'#2a2d36')+R(8,5,16,2,1,'#2a2d36')+C(13.5,9,1,'#1d1d24')+C(18.5,9,1,'#1d1d24')+P('M16 11l5 1.5-5 1z','#ff8c42')+C(16,20,1,'#1d1d24')+C(16,24,1,'#1d1d24')+R(9,15,14,2.5,1,'#e8343a')),
+   '🎎':null,'🪉':null,
+   '⛪':s(P('M16 1v6M13 4h6','none',' stroke="#ffd24a" stroke-width="1.8"')+P('M8 14l8-7 8 7v16H8z','#fff1d6')+P('M7 14l9-8 9 8','none',' stroke="#a8392a" stroke-width="2.6"')+P('M13 30v-6a3 3 0 0 1 6 0v6z','#8a5a32')+C(16,15,2.2,'#8fd3ff')),
+   '🗿':s(P('M9 30V9q0-7 7-7t7 7v21z','#9aa0a8')+P('M9 13h14v3H9z','#80868f')+R(11,17,4,2,1,'#5a5f68')+R(17,17,4,2,1,'#5a5f68')+P('M14 19h4v5h-4z','#80868f')+R(12,26,8,2,1,'#5a5f68')),
+   '👹':s(C(16,17,12,'#e8343a')+P('M6 9L4 1l7 6zM26 9l2-8-7 6z','#fff3d6')+C(11,14,2.6,'#ffd24a')+C(21,14,2.6,'#ffd24a')+C(11,14,1.2,'#1d1d24')+C(21,14,1.2,'#1d1d24')+P('M9 22q7 5 14 0v-2H9z','#5a1010')+P('M10 20l2 3 2-3zM18 20l2 3 2-3z','#fff')),
+   '🧛':s(P('M3 30q2-12 13-12t13 12z','#2a2d36')+P('M8 22l8 4 8-4-8 8z','#c8102e')+C(16,13,8,'#e6e9f5')+P('M8 11q8-10 16 0l-4-2-4 3-4-3z','#2a2d36')+C(13,13,1.3,'#c8102e')+C(19,13,1.3,'#c8102e')+P('M13.5 17l1 2 1-2zM16.5 17l1 2 1-2z','#fff')),
+   '👿':s(C(16,17,12,'#9b5de5')+P('M6 9L4 2l6 4zM26 9l2-7-6 4z','#7a3cc8')+P('M9 12l5 3M23 12l-5 3','none',' stroke="#3a1a5a" stroke-width="2"')+C(12,16,1.6,'#1d1d24')+C(20,16,1.6,'#1d1d24')+P('M10 21q6 5 12 0','none',' stroke="#3a1a5a" stroke-width="2"')),
+   '🍭':s(L('M16 18v13','#f4f1ea',2.6)+C(16,11,10,'#ff5d8f')+P('M16 11m0 0a2 2 0 1 1 3 1a5 5 0 1 1-6 -4a8 8 0 1 1 10 8','none',' stroke="#fff" stroke-width="2.2" stroke-linecap="round"')),
+   '🍬':s(P('M3 9l6 5-6 5zM29 9l-6 5 6 5z','#ffb3cf')+E(16,14,8,6,'#ff5d8f')+L('M12 9q2 5 0 10M17 8q2 6 0 12','#fff',1.6)),
+   '🧁':s(P('M7 17h18l-3 13H10z','#3a86ff')+L('M11 17l1 13M16 17v13M21 17l-1 13','#2a6ad9',1.2)+P('M5 17q0-9 11-10q11 1 11 10z','#ffb3cf')+P('M9 11q7 5 14 0','none',' stroke="#fff" stroke-width="1.5" opacity=".7"')+C(16,6,2.6,'#e8193c')),
+   '🍩':s(C(16,16,13,'#d9924a')+P('M16 4a12 12 0 0 1 12 11q-2 3-4 2t-3 2q-2-1-3 1t-4-1q-3 2-4-1t-4 0q-2-1-3-2A12 12 0 0 1 16 4z','#ff8fc0')+C(16,15,4,'#fff')+C(16,15,4,'none',' stroke="#d9924a" stroke-width="1.4"')+'<g stroke-width="1.6" stroke-linecap="round"><path d="M9 9l2 1" stroke="#4ad8ff"/><path d="M21 7l1.5 1.5" stroke="#ffe14a"/><path d="M24 13l1 2" stroke="#fff"/><path d="M7 15l1-2" stroke="#7dffa8"/></g>'),
+   '🧊':s(P('M6 9l10-5 10 5v14l-10 5-10-5z','#bfe6ff',' stroke="#7fc0ea" stroke-width="1.2"')+P('M6 9l10 5 10-5M16 14v14','none',' stroke="#7fc0ea" stroke-width="1.2"')+P('M8 11l5 2.5','none',' stroke="#fff" stroke-width="1.6"')),
+   '💃':s(C(17,5,3,'#ffcf9a')+P('M14 9h6l2 6-3 1 7 13H6l7-13-3-1z','#e8343a')+L('M14 11l-6-5M20 11l6 3','#ffcf9a',2)),
+   '⛺':null,'🏡':null,'⛲':null,'🏰':null,'🗽':null};
+  Object.assign(I,FACES,ANIM);
+  /* medals */
+  const medal=(c1,c2,n)=>s(P('M9 2h5l2 8-5 2zM23 2h-5l-2 8 5 2z','#3a86ff')+P('M9 2h2.5l3 8-2 1z','#ff5d8f')+C(16,20,10,c2)+C(16,20,8,c1)+'<text x="16" y="25" font-family="Arial,sans-serif" font-size="12" font-weight="900" fill="'+c2+'" text-anchor="middle">'+n+'</text>');
+  I['🥇']=medal('#ffd24a','#d99a00','1');I['🥈']=medal('#e6e9ee','#9aa3b4','2');I['🥉']=medal('#f0a46a','#b5602c','3');I['🏅']=medal('#ffd24a','#d99a00','★');
+  I['🎶']=s(P('M8 26V10l18-5v16','none',' stroke="#9b5de5" stroke-width="2.4"')+E(5.5,26,3.8,3,'#9b5de5',' transform="rotate(-20 5.5 26)"')+E(23.5,21,3.8,3,'#9b5de5',' transform="rotate(-20 23.5 21)"')+P('M8 10l18-5v4L8 14z','#9b5de5'));
+  I['👇']=I['👆'].replace('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">','<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><g transform="rotate(180 16 16)">').replace('</svg>','</g></svg>');
+  I['📆']=I['📅'];I['🛩️']=I['✈️'];I['🎎']=I['🧸'];I['🪉']=I['🎵'];
+  return I;})();
+/* reuse the hand-drawn town buildings as icons */
+ICONS['♫']=ICONS['♬']=ICONS['🎶'];ICONS['♾️']=ICONS['♾']='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M9 10c-4 0-7 3-7 6s3 6 7 6c6 0 8-12 14-12c4 0 7 3 7 6s-3 6-7 6c-6 0-8-12-14-12z" fill="none" stroke="#ff5d8f" stroke-width="3.4" stroke-linecap="round"/></svg>';
+ICONS['〰️']='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M2 16q4-6 7 0t7 0t7 0t7 0" fill="none" stroke="#5a6285" stroke-width="3" stroke-linecap="round"/></svg>';
+ICONS['🐈‍⬛']=ICONS['🐱'].replace(/#f7a64a/g,'#3a3a44').replace('#fde3c0','#6a6a76').replace('#c9782a','#55555f');
+['⛺:tent','🌳:tree','🏡:house','🌷:tulips','⛲:fountain','🎡:ferris','🏰:castle','🗽:statue'].forEach(p=>{const [e,id]=p.split(':');ICONS[e]='town:'+id;});
+const ICON_ALIAS={'⬅️':'←','⬇️':'↓','➡️':'→','⬆️':'↑','➖':'−','✖️':'×','➕':'+','▶️':'▶','❄':'❄️','♪':'♪','↔️':'↔'};
+
+/* ---- emoji detection and lookup ---- */
+const EMOJI_RE=/(?:\p{Regional_Indicator}{2}|\p{Extended_Pictographic}(?:️|⃣)?(?:‍\p{Extended_Pictographic}️?)*)/gu;
+const KEEP_TEXT=new Set(['★','☆','☰','▶','↔','←','→','↑','↓','▲','▼','◀','®','©','™','‼','↩','↪','⬅','➡','⬆','⬇']);
+const iconUrlCache={};
+function iconUrl(e){if(e in iconUrlCache)return iconUrlCache[e];let v=ICONS[e];if(v===undefined)v=ICONS[e.replace(/️/g,'')];if(v===undefined)v=ICONS[e+'️'];
+  let u=null;if(typeof v==='string'){if(v.startsWith('town:')){try{u=townIcon(v.slice(5));}catch(x){u=null;}}else u='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(v);}
+  return iconUrlCache[e]=u;}
+function emojiText(e){const b=e.replace(/️/g,'');if(ICON_ALIAS[e])return ICON_ALIAS[e];if(KEEP_TEXT.has(b))return b+'︎';return null;}
+
+/* ---- DOM: swap emoji in text for <img> icons ---- */
+(function(){const st=document.createElement('style');st.textContent='img.ei{width:1.18em;height:1.18em;vertical-align:-.24em;display:inline-block;margin:0 .04em;pointer-events:none;-webkit-user-drag:none;user-select:none}';document.head.appendChild(st);})();
+const SKIP_TAGS=new Set(['SCRIPT','STYLE','TEXTAREA','INPUT','CANVAS','svg','SVG','TITLE','OPTION','NOSCRIPT']);
+function iconifyText(node){const t=node.nodeValue;if(!t)return;EMOJI_RE.lastIndex=0;if(!EMOJI_RE.test(t))return;const p=node.parentNode;if(!p||SKIP_TAGS.has(p.nodeName)||p.isContentEditable)return;
+  const frag=document.createDocumentFragment();let last=0;EMOJI_RE.lastIndex=0;let m;
+  while((m=EMOJI_RE.exec(t))){const e=m[0];if(m.index>last)frag.appendChild(document.createTextNode(t.slice(last,m.index)));last=m.index+e.length;
+    const u=iconUrl(e);if(u){const im=document.createElement('img');im.className='ei';im.alt='';im.src=u;im.draggable=false;frag.appendChild(im);}
+    else{const tx=emojiText(e);if(tx)frag.appendChild(document.createTextNode(tx));}}
+  if(last<t.length)frag.appendChild(document.createTextNode(t.slice(last)));
+  /* drop a stray leading space left behind when an emoji at the start had no icon */
+  p.replaceChild(frag,node);}
+function iconifyTree(root){if(!root)return;if(root.nodeType===3){iconifyText(root);return;}if(root.nodeType!==1||SKIP_TAGS.has(root.nodeName))return;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null);const list=[];let n;while((n=w.nextNode()))list.push(n);list.forEach(iconifyText);}
+let iconQ=new Set(),iconT=0;
+const iconObs=new MutationObserver(ms=>{ms.forEach(m=>{if(m.type==='characterData')iconQ.add(m.target);else m.addedNodes.forEach(x=>iconQ.add(x));});
+  const q=[...iconQ];iconQ.clear();iconObs.disconnect();try{q.forEach(x=>{if(x.isConnected)iconifyTree(x);});}finally{iconObs.observe(document.body,{childList:true,subtree:true,characterData:true});}});
+iconifyTree(document.body);iconObs.observe(document.body,{childList:true,subtree:true,characterData:true});
+
+/* ---- canvas: draw icons where text contains emoji ---- */
+const iconImgs={};
+function iconImg(e){if(e in iconImgs)return iconImgs[e];const u=iconUrl(e);if(!u)return iconImgs[e]=null;const im=new Image();im.src=u;return iconImgs[e]=im;}
+Object.keys(ICONS).forEach(e=>{try{iconImg(e);}catch(x){}});
+(function(){const P=CanvasRenderingContext2D.prototype,oF=P.fillText,oS=P.strokeText,oM=P.measureText;
+  function segs(t){const out=[];let last=0,m;EMOJI_RE.lastIndex=0;while((m=EMOJI_RE.exec(t))){if(m.index>last)out.push({t:t.slice(last,m.index)});const e=m[0],im=iconImg(e);
+      if(im)out.push({i:im});else{const tx=emojiText(e);if(tx)out.push({t:tx});}last=m.index+e.length;}if(last<t.length)out.push({t:t.slice(last)});return out;}
+  function fsize(c){const m=/(\d+(?:\.\d+)?)px/.exec(c.font);return m?+m[1]:16;}
+  function draw(c,orig,t,x,y,mw,stroke){t=String(t);EMOJI_RE.lastIndex=0;if(!EMOJI_RE.test(t))return orig.call(c,t,x,y,...(mw!=null?[mw]:[]));
+    const S=segs(t),fs=fsize(c),isz=fs*1.08;let tw=0;S.forEach(s=>{s.w=s.i?isz+fs*.06:oM.call(c,s.t).width;tw+=s.w;});
+    let k=1;if(mw!=null&&tw>mw&&mw>0)k=mw/tw;const al=c.textAlign,dir=c.direction;let sx=al==='center'?x-tw*k/2:(al==='right'||(al==='end'&&dir!=='rtl'))?x-tw*k:x;
+    const bl=c.textBaseline,iy=bl==='middle'?y-isz/2:(bl==='top'||bl==='hanging')?y:(bl==='bottom'||bl==='ideographic')?y-isz:y-isz*.84;
+    c.save();c.textAlign='left';if(k!==1){c.translate(sx,0);c.scale(k,1);c.translate(-sx,0);}
+    S.forEach(s=>{if(s.i){if(!stroke&&s.i.complete&&s.i.naturalWidth){try{c.drawImage(s.i,sx+fs*.03,iy,isz,isz);}catch(e){}}}else orig.call(c,s.t,sx,y);sx+=s.w;});c.restore();}
+  P.fillText=function(t,x,y,mw){return draw(this,oF,t,x,y,mw,false);};
+  P.strokeText=function(t,x,y,mw){return draw(this,oS,t,x,y,mw,true);};
+  P.measureText=function(t){t=String(t);EMOJI_RE.lastIndex=0;if(!EMOJI_RE.test(t))return oM.call(this,t);const S=segs(t),fs=fsize(this);let w=0;S.forEach(s=>{w+=s.i?fs*1.14:oM.call(this,s.t).width;});
+    const r=oM.call(this,t.replace(EMOJI_RE,''));return{width:w,actualBoundingBoxAscent:Math.max(r.actualBoundingBoxAscent||0,fs*.84),actualBoundingBoxDescent:r.actualBoundingBoxDescent||fs*.2,actualBoundingBoxLeft:0,actualBoundingBoxRight:w,fontBoundingBoxAscent:r.fontBoundingBoxAscent,fontBoundingBoxDescent:r.fontBoundingBoxDescent};};
+})();
 </script>
 </body>
 </html>
