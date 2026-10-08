@@ -5974,8 +5974,9 @@ function townIcon(id){if(townIconCache[id])return townIconCache[id];const c=docu
 {const _pz5=pause;pause=function(){const r=_pz5.apply(this,arguments);try{const b=$('pStages');const lbl={campaign:'☰ Stages',wobble:'☰ Levels',rhythm:'☰ Songs'}[mode];
   b.hidden=!lbl;if(lbl)b.textContent=lbl;}catch(e){}return r;};}
 
-const BUILD='1.70';
+const BUILD='1.72';
 const WHATS_NEW=[
+ '🏘️ Your town now grows step by step: new buildings unlock one by one as you play',
  '🏘️ Town buildings are now drawn by hand, and every building gives you a bonus',
  '🎟️ The season pass has 40 tiers, with new exclusive blocks every season',
  '🎵 Rhythm rewards are rebalanced',
@@ -5986,14 +5987,67 @@ const WHATS_NEW=[
  '🛠️ Lots of fixes, including buttons that did not respond'];
 function whatsNewDue(){const seen=store.get('stable-build','');if(seen===BUILD)return false;
   const vet=(stats.games||0)>0||best>0||rebirths>0;if(!vet){store.set('stable-build',BUILD);return false;}return true;}
-function showWhatsNew(){store.set('stable-build',BUILD);
+let wnOpen=false;
+function showWhatsNew(){wnOpen=true;
   $('msgTitle').textContent="What's new ✨";$('msgBig').textContent='';
   const info=$('msgInfo');info.innerHTML='<ul class="wnlist">'+WHATS_NEW.map(t=>'<li></li>').join('')+'</ul>';[...info.querySelectorAll('li')].forEach((li,i)=>li.textContent=WHATS_NEW[i]);
-  const ok=$('msgOk'),no=$('msgNo');ok.textContent='Got it!';no.hidden=true;ok.onclick=()=>{ok.textContent='Collect';try{SFX.click();}catch(e){}showMenu();};show('msg');}
+  const ok=$('msgOk'),no=$('msgNo');no.hidden=true;ok.textContent='Got it!';ok.disabled=true;setTimeout(()=>{if(wnOpen)ok.disabled=false;},1800);
+  ok.onclick=()=>{if(ok.disabled)return;wnOpen=false;store.set('stable-build',BUILD);ok.textContent='Collect';try{SFX.click();}catch(e){}showMenu();};show('msg');}
 (function(){const st=document.createElement('style');st.textContent='.wnlist{text-align:left;margin:4px 0 0;padding-left:0;list-style:none;font-size:15px;line-height:1.35}.wnlist li{margin:0 0 8px;padding:8px 10px;background:var(--chip);border-radius:12px}';document.head.appendChild(st);
-  let tries=0;const t=setInterval(()=>{tries++;if(tries>120){clearInterval(t);return;}
-    if(!whatsNewDue()){clearInterval(t);return;}
-    if(document.getElementById('splash'))return;if($('menu').hidden||!$('msg').hidden)return;clearInterval(t);showWhatsNew();},1000);})();
+  /* keeps coming back until "Got it!" is tapped, never on top of another popup */
+  const t=setInterval(()=>{if(!whatsNewDue()){clearInterval(t);return;}
+    if(document.getElementById('splash'))return;
+    if(wnOpen){if(!$('msg').hidden&&$('msgTitle').textContent==="What's new ✨")return;wnOpen=false;}
+    if($('menu').hidden||!$('msg').hidden)return;setTimeout(()=>{if(!$('menu').hidden&&$('msg').hidden&&!wnOpen)showWhatsNew();},600);},1000);})();
+
+/* ===== town grows step by step (Oct 9): each building unlocks after the one before it, as you stack more blocks over time ===== */
+const TOWN_PATH=[['tree',0],['tulips',60],['tent',150],['sunpatch',300],['sheep',500],['beehive',750],['cow',1050],['pond',1400],['house',1800],['fountain',2300],['castle',2900],['statue',3600],['ferris',4500],['rocket',5600]];
+const floorsEver=()=>Math.floor(stats.floors||0);
+function townState(i){const [id,need]=TOWN_PATH[i];if(townOwned.includes(id))return{st:'built'};
+  const prev=TOWN_PATH.slice(0,i).find(([p])=>!townOwned.includes(p));if(prev)return{st:'locked',why:'Build the '+TOWN.find(t=>t[0]===prev[0])[2]+' first'};
+  if(floorsEver()<need)return{st:'locked',why:'Stack '+fmt(need)+' blocks in total ('+fmt(floorsEver())+' / '+fmt(need)+')',prog:floorsEver()/need};
+  return{st:'open'};}
+const townOpenIds=()=>TOWN_PATH.filter((p,i)=>townState(i).st==='open').map(p=>p[0]);
+renderTown=function(){
+  refreshCoins();const L=$('townList');L.innerHTML='';
+  if(townGiftReady()){const d=document.createElement('div');d.className='item okrow';d.innerHTML='<span class="ic">🎁</span><span class="tx"><b>Daily town gift</b><small>Ready to collect</small></span>';
+    const b=document.createElement('button');b.textContent='Claim';b.onclick=claimTownGift;d.appendChild(b);L.appendChild(d);}
+  let shownLocked=0;
+  TOWN_PATH.forEach(([id],i)=>{const t=TOWN.find(x=>x[0]===id);if(!t)return;const [,e,n,bp,cur]=t,pr=bp*mult(),s=townState(i);
+    if(s.st==='locked'){if(shownLocked>=2)return;shownLocked++;}
+    const d=document.createElement('div');d.className='item'+(s.st==='locked'?' tlock':'');
+    d.innerHTML='<span class="ic"><img alt="" style="width:40px;height:40px;display:block"></span><span class="tx"><b></b><small></small></span>';
+    d.querySelector('img').src=townIcon(id);d.querySelector('b').textContent=n;
+    d.querySelector('small').textContent=s.st==='built'?'Built · '+fxText(id):s.st==='open'?fxText(id):'🔒 '+s.why;
+    if(s.st==='locked'&&s.prog!=null){const bar=document.createElement('span');bar.className='tbar';bar.innerHTML='<i></i>';bar.firstChild.style.width=Math.min(100,s.prog*100)+'%';d.querySelector('.tx').appendChild(bar);}
+    const b=document.createElement('button');
+    if(s.st==='built'){b.textContent='✓';b.disabled=true;}
+    else if(s.st==='locked'){b.textContent='🔒';b.disabled=true;b.classList.add('cant');}
+    else{b.textContent=(cur==='f'?'🌻 ':'🪙 ')+fmt(pr);b.onclick=()=>{if(townState(i).st!=='open')return;if(!(cur==='f'?buyF(pr):buy(pr)))return;townOwned.push(id);save('stable-town',townOwned);
+        notify('🏘️ '+n+' built! '+fxText(id));renderTown();refreshMenu();try{checkAch();}catch(e){}};
+      if((cur==='f'?flowersTotal:coins)<pr)b.classList.add('cant');}
+    d.appendChild(b);L.appendChild(d);});
+  const left=TOWN_PATH.filter((p,i)=>townState(i).st==='locked').length-shownLocked;
+  if(left>0){const p=document.createElement('p');p.className='note';p.textContent='+ '+left+' more buildings to discover as your town grows';L.appendChild(p);}
+  /* picture of your town */
+  let v=$('townView');if(!v){v=document.createElement('div');v.id='townView';$('townCount').before(v);}
+  v.innerHTML='';const c=document.createElement('canvas'),w=v.clientWidth||320,h=110,dpr=Math.min(2,window.devicePixelRatio||1);c.width=w*dpr;c.height=h*dpr;
+  c.style.cssText='position:static;inset:auto;width:100%;height:'+h+'px;display:block';v.style.height=h+'px';v.appendChild(c);const g=c.getContext('2d');g.scale(dpr,dpr);
+  const sky=g.createLinearGradient(0,0,0,h);sky.addColorStop(0,'#8fd3ff');sky.addColorStop(1,'#d8f1ff');g.fillStyle=sky;g.fillRect(0,0,w,h);
+  g.fillStyle='#63bd72';g.beginPath();g.moveTo(0,h-40);g.quadraticCurveTo(w/2,h-58,w,h-40);g.lineTo(w,h);g.lineTo(0,h);g.fill();g.fillStyle='#4fb862';g.fillRect(0,h-26,w,26);
+  const own=TOWN.filter(t=>townOwned.includes(t[0])&&TDRAW[t[0]]);
+  own.filter(t=>!t[6]).forEach(([id,e,n,pr,cur,fx,row,sz])=>{g.save();TDRAW[id](g,fx*w,h-34,townScale(sz)*.62,1);g.restore();});
+  own.filter(t=>t[6]).forEach(([id,e,n,pr,cur,fx,row,sz])=>{g.save();TDRAW[id](g,fx*w,h-8,townScale(sz)*.72,1);g.restore();});
+  if(!own.length){g.fillStyle='#24506b';g.font='700 13px system-ui,sans-serif';g.textAlign='center';g.fillText('Build your first tree! Your town grows as you play.',w/2,h/2-6);}
+  const parts=[];const cb=townSum('coin'),fb=townSum('flower'),xb=townSum('xp');if(cb)parts.push('🪙 +'+Math.round(cb*100)+'%');if(fb)parts.push('🌻 +'+Math.round(fb*100)+'%');if(xb)parts.push('⭐ +'+Math.round(xb*100)+'% XP');
+  $('townCount').innerHTML='<div class="townBonus">'+(parts.length?parts.map(p=>'<span>'+p+'</span>').join(''):'<span>No town bonus yet</span>')+'</div>'+townOwned.length+' / '+TOWN.length+' built. New buildings unlock one by one as you stack more blocks. Bonuses work in every mode except Daily and Challenge.';
+};
+(function(){const st=document.createElement('style');st.textContent='.item.tlock{opacity:.7}.item.tlock img{filter:grayscale(1) brightness(1.1);opacity:.6}.tbar{display:block;height:5px;border-radius:3px;background:rgba(127,127,160,.25);margin-top:5px;overflow:hidden}.tbar i{display:block;height:100%;background:linear-gradient(90deg,#ffd24a,#ff5d8f)}';document.head.appendChild(st);})();
+/* badge and a notice when a new building unlocks */
+{const _rm7=refreshMenu;refreshMenu=function(){const r=_rm7.apply(this,arguments);try{const open=townOpenIds();
+  setBadge($('bTown'),(townGiftReady()?1:0)+open.length);
+  const seen=asArr(load('stable-townseen',[])).map(String),fresh=open.filter(id=>!seen.includes(id));
+  if(fresh.length&&isUnlocked('bTown')){save('stable-townseen',seen.concat(fresh));fresh.forEach(id=>{const t=TOWN.find(x=>x[0]===id);if(t)notify('🏘️ New for your town: '+t[2]+'! Build it in Town');});}}catch(e){}return r;};}
 </script>
 </body>
 </html>
