@@ -3215,7 +3215,8 @@ function drawVortex(va){
 function checkLogin(){
   const now=new Date(),t=dstr(now),ms=now.getTime();
   if(login.last===t)return 0;
-  if(login.ms&&ms<login.ms)return 0;
+  /* clock went back: no new reward, unless the saved time was days in the future (a phone clock that was wrong and got fixed) */
+  if(login.ms&&ms<login.ms&&login.ms-ms<2*864e5)return 0;
   const y=new Date(ms);y.setDate(y.getDate()-1);
   login.streak=login.last===dstr(y)?login.streak+1:1;login.last=t;login.ms=ms;save('stable-login',login);return login.streak;
 }
