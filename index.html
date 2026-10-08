@@ -6649,6 +6649,12 @@ Object.keys(ICONS).forEach(e=>{try{iconImg(e);}catch(x){}});
   P.measureText=function(t){t=String(t);EMOJI_RE.lastIndex=0;if(!EMOJI_RE.test(t))return oM.call(this,t);const S=segs(t),fs=fsize(this);let w=0;S.forEach(s=>{w+=s.i?fs*1.14:oM.call(this,s.t).width;});
     const r=oM.call(this,t.replace(EMOJI_RE,''));return{width:w,actualBoundingBoxAscent:Math.max(r.actualBoundingBoxAscent||0,fs*.84),actualBoundingBoxDescent:r.actualBoundingBoxDescent||fs*.2,actualBoundingBoxLeft:0,actualBoundingBoxRight:w,fontBoundingBoxAscent:r.fontBoundingBoxAscent,fontBoundingBoxDescent:r.fontBoundingBoxDescent};};
 })();
+
+/* pause menu: always fill in the right buttons when it opens (also when opened from the pause button) */
+function pauseMenuSetup(){try{const b=$('pStages'),lbl={campaign:'☰ Stages',wobble:'☰ Levels',rhythm:'☰ Songs'}[mode];if(b){b.hidden=!lbl;b.textContent=lbl||'';}
+  const r=$('pRestart');if(r)r.hidden=(mode==='daily');}catch(e){}}
+{const _shP=show;show=function(id){if(id==='pause')pauseMenuSetup();return _shP.apply(this,arguments);};}
+try{$('pauseBtn').onclick=()=>pause();$('pStages').hidden=true;}catch(e){}
 </script>
 </body>
 </html>
