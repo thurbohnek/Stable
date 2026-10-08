@@ -5966,6 +5966,34 @@ function townIcon(id){if(townIconCache[id])return townIconCache[id];const c=docu
     own.filter(t=>t[6]).forEach(([id,e,n,pr,cur,fx,row,sz])=>{g.save();TDRAW[id](g,fx*w,h-8,townScale(sz)*.72,1);g.restore();});
     if(!own.length){g.fillStyle='#24506b';g.font='700 13px system-ui,sans-serif';g.textAlign='center';g.fillText('Build here! Every building gives you a bonus.',w/2,h/2-6);}}
 }catch(e){}return r;};}
+
+/* ===== round 5 (Oct 9): stages from pause, "what's new" after an update ===== */
+(function(){const q=$('pRestart')||$('pResume');if(!q||$('pStages'))return;const b=document.createElement('button');b.id='pStages';b.className='ghost';
+  q.after(b);b.onclick=()=>{try{SFX.click();}catch(e){}const m=mode;try{if(coach)coachEnd(false);}catch(e){}showMenu();
+    if(m==='campaign')showCampaign();else if(m==='wobble')showWobbleMenu();else if(m==='rhythm')showSongs();};})();
+{const _pz5=pause;pause=function(){const r=_pz5.apply(this,arguments);try{const b=$('pStages');const lbl={campaign:'☰ Stages',wobble:'☰ Levels',rhythm:'☰ Songs'}[mode];
+  b.hidden=!lbl;if(lbl)b.textContent=lbl;}catch(e){}return r;};}
+
+const BUILD='1.70';
+const WHATS_NEW=[
+ '🏘️ Town buildings are now drawn by hand, and every building gives you a bonus',
+ '🎟️ The season pass has 40 tiers, with new exclusive blocks every season',
+ '🎵 Rhythm rewards are rebalanced',
+ '⏸️ Pause menu: Restart, Stages and Main menu',
+ '✨ Cleaner menu, settings and icons',
+ '🐉 Bosses now turn around in 3D',
+ '💡 Tips when a level gives you trouble (you can turn them off)',
+ '🛠️ Lots of fixes, including buttons that did not respond'];
+function whatsNewDue(){const seen=store.get('stable-build','');if(seen===BUILD)return false;
+  const vet=(stats.games||0)>0||best>0||rebirths>0;if(!vet){store.set('stable-build',BUILD);return false;}return true;}
+function showWhatsNew(){store.set('stable-build',BUILD);
+  $('msgTitle').textContent="What's new ✨";$('msgBig').textContent='';
+  const info=$('msgInfo');info.innerHTML='<ul class="wnlist">'+WHATS_NEW.map(t=>'<li></li>').join('')+'</ul>';[...info.querySelectorAll('li')].forEach((li,i)=>li.textContent=WHATS_NEW[i]);
+  const ok=$('msgOk'),no=$('msgNo');ok.textContent='Got it!';no.hidden=true;ok.onclick=()=>{ok.textContent='Collect';try{SFX.click();}catch(e){}showMenu();};show('msg');}
+(function(){const st=document.createElement('style');st.textContent='.wnlist{text-align:left;margin:4px 0 0;padding-left:0;list-style:none;font-size:15px;line-height:1.35}.wnlist li{margin:0 0 8px;padding:8px 10px;background:var(--chip);border-radius:12px}';document.head.appendChild(st);
+  let tries=0;const t=setInterval(()=>{tries++;if(tries>120){clearInterval(t);return;}
+    if(!whatsNewDue()){clearInterval(t);return;}
+    if(document.getElementById('splash'))return;if($('menu').hidden||!$('msg').hidden)return;clearInterval(t);showWhatsNew();},1000);})();
 </script>
 </body>
 </html>
