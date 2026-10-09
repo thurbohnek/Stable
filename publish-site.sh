@@ -4,4 +4,4 @@
 set -e
 cd "$(dirname "$0")"
 mkdir -p site/stable
-cp index.html manifest.json sw.js privacy.html terms.html icon-192.png icon-512.png icon-maskable-512.png play-store-feature-graphic-1024x500.png site/stable/
+cp index.html manifest.json sw.js privacy.html terms.html delete-data.html icon-192.png icon-512.png icon-maskable-512.png play-store-feature-graphic-1024x500.png site/stable/
