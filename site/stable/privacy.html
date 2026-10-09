@@ -1,16 +1,69 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stable – Privacy Policy</title>
-<style>body{font-family:system-ui,sans-serif;max-width:720px;margin:0 auto;padding:24px;line-height:1.6;color:#222}h1{color:#ff5d8f}li{margin:4px 0}</style></head><body>
-<h1>Privacy Policy – Stable</h1><p><b>Developer:</b> Studio.grane<br><b>Last updated:</b> October 9, 2026</p>
-<h2>No account needed</h2><p>Stable does not ask for your name, email, phone number or any login. We do not sell or share your data, and we do not use it for advertising.</p>
-<h2>What is stored on your device</h2><p>Your game progress (scores, coins, unlocked items and settings) is saved on your own device.</p>
-<h2>What is stored online</h2><p>When you are online, the game creates an anonymous player ID (a random number, not linked to who you are) and uses it to store:</p>
+<meta name="robots" content="noindex">
+<style>
+:root{--ink:#1d2140;--soft:#4a5070;--line:#e3e5ef;--accent:#e2437a;--bg:#fff;--chip:#f4f5fa}
+@media (prefers-color-scheme:dark){:root{--ink:#eef0ff;--soft:#b7bcd8;--line:#2b3157;--accent:#ff7aa6;--bg:#0e1330;--chip:#171d42}}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;max-width:760px;margin:0 auto;padding:24px 18px 48px;line-height:1.6;color:var(--ink);background:var(--bg)}
+h1{color:var(--accent);line-height:1.2;margin:8px 0 4px}h2{margin:32px 0 8px;font-size:1.2rem}h3{margin:20px 0 6px;font-size:1.02rem}
+a{color:var(--accent)}p,li{color:var(--soft)}b,strong{color:var(--ink)}
+.box{background:var(--chip);border-radius:14px;padding:14px 18px;margin:16px 0}
+table{width:100%;border-collapse:collapse;font-size:.92rem;margin:10px 0}th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top;color:var(--soft)}th{color:var(--ink)}
+.wrap{overflow-x:auto}small{color:var(--soft)}
+</style></head><body>
+<h1>Privacy Policy – Stable</h1>
+<p><small>Last updated: October 9, 2026 · Applies to the Stable app on Google Play, the iPhone home-screen version and studio.grane.app/stable</small></p>
+
+<div class="box"><b>In short:</b> Stable needs no account and never asks for your real name, email or phone number. We do not show ads, do not track you and do not sell or share your data. If you use the online features (leaderboards, weekly tournament and cloud save), we store a random player ID, the nickname you pick, your scores and a backup of your game. You can turn online features off and delete your online data at any time in <b>Settings</b>.</div>
+
+<h2>1. Who is responsible</h2>
+<p>The data controller is <b>Studio.grane</b>, Norway. Contact: <a href="mailto:studio.grane@gmail.com">studio.grane@gmail.com</a>. We are a very small developer and do not have a data protection officer; write to the address above about anything in this policy.</p>
+
+<h2>2. What we process, why, and for how long</h2>
+<div class="wrap"><table>
+<tr><th>Data</th><th>Why</th><th>Legal basis (GDPR)</th><th>How long</th></tr>
+<tr><td><b>Game progress on your device</b> (scores, coins, items, settings), saved in the app's local storage</td><td>So the game remembers your progress</td><td>Necessary to provide the game you asked for (Art. 6(1)(b)); local storage that is strictly necessary needs no consent</td><td>Until you use Reset progress or uninstall</td></tr>
+<tr><td><b>Random player ID and login token</b> (anonymous, not linked to who you are)</td><td>To run the online features</td><td>Art. 6(1)(b)</td><td>Until you delete your online data, or 24 months without use</td></tr>
+<tr><td><b>Nickname and best scores</b> (Endless and weekly tournament)</td><td>Leaderboards. <b>Your nickname and scores are shown to other players.</b></td><td>Art. 6(1)(b)</td><td>Until you delete your online data, or 24 months without use</td></tr>
+<tr><td><b>Cloud save</b> (a copy of your game progress) and a <b>restore code</b></td><td>Backup, and moving your progress to a new phone</td><td>Art. 6(1)(b)</td><td>Until you delete your online data, or 24 months without use</td></tr>
+<tr><td><b>Feedback you send</b>: your text plus technical details (game mode, level, screen size, device and browser type, language, time)</td><td>To answer you and fix problems</td><td>Our legitimate interest in a working game (Art. 6(1)(f))</td><td>12 months</td></tr>
+<tr><td><b>Name reports</b>: the reported nickname and player ID</td><td>To keep the leaderboards free of offensive names (EU Digital Services Act)</td><td>Legal obligation and legitimate interest (Art. 6(1)(c) and (f))</td><td>12 months</td></tr>
+<tr><td><b>Technical logs</b> from our providers: IP address, time, request and browser type</td><td>Delivering the game, security and stopping abuse</td><td>Legitimate interest (Art. 6(1)(f))</td><td>A short time, as set by each provider (normally days to weeks)</td></tr>
+</table></div>
+<p>When you turn <b>Online features</b> off in Settings, the game stops sending anything online. Without online features, only the first row applies.</p>
+<p>We do <b>not</b> use advertising, analytics, tracking, profiling or automated decisions about you, and we do not sell or share your data. Offensive nicknames are blocked automatically by a word filter; this only stops a name from being used and has no other effect.</p>
+
+<h2>3. Who processes data for us</h2>
 <ul>
-<li><b>Leaderboards:</b> the player name you choose in the game, your best Endless score and your weekly tournament score. These are shown to other players.</li>
-<li><b>Cloud save:</b> a backup of your game progress and a restore code, so you can move your progress to a new phone. Only someone with your code can restore it.</li>
-<li><b>Feedback:</b> if you use "Send feedback", the text you write plus basic technical details (game mode, level, screen size, device type and language) so we can fix problems.</li>
+<li><b>Supabase</b> (Supabase Inc.): database and anonymous login. Our data is stored on servers in the EU (Stockholm, Sweden).</li>
+<li><b>Cloudflare</b> (Cloudflare Inc.): hosting and delivery of studio.grane.app.</li>
+<li><b>GitHub</b> (GitHub Inc.): hosting of the older game address thurbohnek.github.io/Stable.</li>
+<li><b>Google</b>: if you install Stable from Google Play, Google handles the download (and later any purchases) under its own privacy policy.</li>
 </ul>
-<p>This data is stored with our database provider, Supabase, on servers in the EU (Stockholm, Sweden). It is only used to run these game features.</p>
-<h2>Advertising</h2><p>The current version contains no third-party ads. If ads are added in a future update, this policy will be updated to describe the ad provider and the data it uses.</p>
-<h2>Children</h2><p>Stable does not knowingly collect personal information from anyone, including children. Please do not use your real full name as your player name.</p>
-<h2>Deleting your data</h2><p>"Reset progress" in the game removes your progress from your device and your scores from the leaderboards. To have your online data (cloud save, scores and feedback) deleted completely, email us and include your restore code from Settings, Cloud save. We delete it within 30 days.</p>
-<h2>Contact</h2><p>Questions? Email: <b><a href="mailto:studio.grane@gmail.com">studio.grane@gmail.com</a></b></p></body></html>
+<p>These providers act on our instructions under data processing agreements. Some are US companies or have support staff outside the EU/EEA; such transfers are protected by the EU Standard Contractual Clauses and/or the EU–US Data Privacy Framework.</p>
+
+<h2>4. Children</h2>
+<p>Stable is made for all ages. We never ask for real names, contact details or age, and we advise players to use a nickname, not their full name. Offensive names are blocked, and every name on the leaderboards can be reported. Parents can turn online features off in Settings, delete the online data with <b>Settings → Backup and restore code → Delete my online data</b>, or email us and we delete it for them.</p>
+
+<h2>5. Your rights</h2>
+<p>Under the GDPR you have the right to:</p>
+<ul>
+<li><b>access</b> your data and get a copy (<b>portability</b>): email us your restore code (Settings → Backup and restore code);</li>
+<li><b>correct</b> it: change your nickname in Hall of Fame;</li>
+<li><b>delete</b> it: <b>Delete my online data</b> in the game, or email us;</li>
+<li><b>object</b> and <b>restrict</b> processing: turn <b>Online features</b> off in Settings;</li>
+<li><b>complain</b> to a data protection authority. In Norway this is <a href="https://www.datatilsynet.no" rel="noopener">Datatilsynet</a>; in other EU/EEA countries, your local authority.</li>
+</ul>
+<p>Because we do not know who you are, we may ask for your restore code so we find the right data. We answer within one month.</p>
+
+<h2>6. Cookies and local storage</h2>
+<p>Stable uses no cookies. The game saves your progress, settings and (with online features on) its login token in your device's local storage. This is strictly necessary for the game to work, so no consent banner is needed. studio.grane.app uses no cookies, no analytics and no external fonts.</p>
+
+<h2>7. Security</h2>
+<p>All connections are encrypted (HTTPS). Players can only read and change their own cloud save; everything that ends up on the leaderboards is checked by the server.</p>
+
+<h2>8. Changes</h2>
+<p>If we change how we handle data, for example if ads or purchases are added, we update this page before the change and say so in the game's What's new.</p>
+
+<h2>9. Contact</h2>
+<p>Studio.grane · <a href="mailto:studio.grane@gmail.com">studio.grane@gmail.com</a> · <a href="terms.html">Terms of use</a></p>
+</body></html>

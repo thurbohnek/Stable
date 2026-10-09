@@ -10,10 +10,10 @@
 <meta property="og:description" content="Small, bright games for your phone.">
 <meta property="og:image" content="https://studio.grane.app/stable/play-store-feature-graphic-1024x500.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' rx='44' fill='%230E1330'/%3E%3Cg fill='none' stroke-width='20' stroke-linecap='round'%3E%3Cpath d='M100 114L32 166M100 114L168 166' stroke='%23FF4FB0'/%3E%3Cpath d='M100 80L50 122M100 80L150 122' stroke='%233DE0FF'/%3E%3Cpath d='M100 46L68 78M100 46L132 78' stroke='%23C6FF3D'/%3E%3C/g%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/baloo2-latin.woff" as="font" type="font/woff" crossorigin>
 <style>
+@font-face{font-family:"Baloo 2";font-style:normal;font-weight:400 800;font-display:swap;src:url(fonts/baloo2-latin.woff) format("woff")}
+@font-face{font-family:"Unbounded";font-style:normal;font-weight:200 900;font-display:swap;src:url(fonts/unbounded-latin.woff) format("woff")}
 :root{--bg:#0E1330;--bg2:#070a1c;--ink:#ffffff;--soft:rgba(255,255,255,.72);--dim:rgba(255,255,255,.5);--lime:#C6FF3D;--cyan:#3DE0FF;--pink:#FF4FB0;--card:rgba(255,255,255,.06);--line:rgba(255,255,255,.12)}
 *{box-sizing:border-box}
 html{background:var(--bg2)}
@@ -101,7 +101,7 @@ footer a{color:var(--soft)}
 <footer>
   <div class="wrap">
     <span>© <span id="yr">2026</span> Studio.grane</span>
-    <span><a href="mailto:studio.grane@gmail.com">studio.grane@gmail.com</a> · <a href="stable/privacy.html">Stable privacy policy</a></span>
+    <span><a href="mailto:studio.grane@gmail.com">studio.grane@gmail.com</a> · <a href="stable/privacy.html">Privacy</a> · <a href="stable/terms.html">Terms</a></span>
   </div>
 </footer>
 <script>try{document.getElementById('yr').textContent=new Date().getFullYear();}catch(e){}</script>
