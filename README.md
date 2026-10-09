@@ -22,3 +22,7 @@ Pets with perks, 30+ blocks, biomes, rebirths (up to 100), season pass, daily mi
 - Ads and purchases are placeholders (test mode in Settings). In the Android app they will be connected to AdMob and Google Play Billing.
 
 Made with Claude.
+
+## Hosting
+- `site/` is published by Cloudflare Pages at **https://studio.grane.app** (the Studio.grane home page) with the game at **/stable/**. Run `./publish-site.sh` after updating the game files to copy them into `site/stable/`.
+- The repo root still serves the old address `https://thurbohnek.github.io/Stable/` through GitHub Pages. `migrate.html` hands saved progress to the new address once.

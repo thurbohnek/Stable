@@ -1,0 +1,11 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stable</title><meta name="robots" content="noindex"></head>
+<body style="margin:0;background:#0E1330;color:#fff;font:600 16px system-ui,sans-serif;display:grid;place-items:center;min-height:100vh">Moving your progress…
+<script>
+/* Stable has moved to studio.grane.app/stable. The new address sends players here once;
+   this page hands their saved progress (the stable-* keys) back to the new address. */
+(function(){var to='https://studio.grane.app/stable/';
+  try{var m=/[#&]to=([^&]*)/.exec(location.hash);if(m){var u=new URL(decodeURIComponent(m[1]));
+    if(u.protocol==='https:'&&/(^|\.)grane\.app$/.test(u.hostname))to=u.origin+u.pathname+u.search;}}catch(e){}
+  var d={};try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('stable-')===0&&k!=='stable-moved')d[k]=localStorage.getItem(k);}}catch(e){}
+  location.replace(to+'#stmig='+encodeURIComponent(JSON.stringify(d)));})();
+</script></body></html>

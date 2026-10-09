@@ -1,0 +1,12 @@
+/.well-known/assetlinks.json
+  Content-Type: application/json
+  Access-Control-Allow-Origin: *
+
+/stable/sw.js
+  Cache-Control: no-cache
+
+/stable/index.html
+  Cache-Control: no-cache
+
+/stable/
+  Cache-Control: no-cache

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Studio.grane</title>
+<meta name="description" content="Studio.grane makes small, bright games for your phone. Play Stable, the tower stacking game, right in your browser.">
+<meta name="theme-color" content="#0E1330">
+<meta property="og:title" content="Studio.grane">
+<meta property="og:description" content="Small, bright games for your phone.">
+<meta property="og:image" content="https://studio.grane.app/stable/play-store-feature-graphic-1024x500.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' rx='44' fill='%230E1330'/%3E%3Cg fill='none' stroke-width='20' stroke-linecap='round'%3E%3Cpath d='M100 114L32 166M100 114L168 166' stroke='%23FF4FB0'/%3E%3Cpath d='M100 80L50 122M100 80L150 122' stroke='%233DE0FF'/%3E%3Cpath d='M100 46L68 78M100 46L132 78' stroke='%23C6FF3D'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0E1330;--bg2:#070a1c;--ink:#ffffff;--soft:rgba(255,255,255,.72);--dim:rgba(255,255,255,.5);--lime:#C6FF3D;--cyan:#3DE0FF;--pink:#FF4FB0;--card:rgba(255,255,255,.06);--line:rgba(255,255,255,.12)}
+*{box-sizing:border-box}
+html{background:var(--bg2)}
+body{margin:0;min-height:100vh;color:var(--ink);font:500 17px/1.55 "Baloo 2",system-ui,sans-serif;background:radial-gradient(120% 70% at 50% 0%,#1a2152 0%,var(--bg) 50%,var(--bg2) 100%) no-repeat;overflow-x:hidden}
+a{color:var(--cyan)}
+.wrap{max-width:980px;margin:0 auto;padding:0 20px}
+header.hero{min-height:min(88vh,760px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:22px;padding:60px 0 40px;position:relative}
+.logo{width:min(46vw,190px);aspect-ratio:1;position:relative}
+.logo svg{width:100%;height:100%;overflow:visible}
+.logo path{fill:none;stroke-width:20;stroke-linecap:round;stroke-dasharray:1 1;stroke-dashoffset:1;animation:draw .5s cubic-bezier(.3,.7,.3,1) forwards}
+.logo .c3{stroke:var(--pink);filter:drop-shadow(0 0 6px var(--pink));animation-delay:.15s}
+.logo .c2{stroke:var(--cyan);filter:drop-shadow(0 0 6px var(--cyan));animation-delay:.45s}
+.logo .c1{stroke:var(--lime);filter:drop-shadow(0 0 6px var(--lime));animation-delay:.72s}
+.logo::before{content:"";position:absolute;inset:-35%;border-radius:50%;background:radial-gradient(circle,rgba(198,255,61,.32),rgba(61,224,255,.12) 40%,transparent 68%);opacity:0;animation:glow 1.6s ease-out 1s forwards;z-index:-1}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes glow{to{opacity:1}}
+h1{font:800 clamp(40px,11vw,84px)/1 Unbounded,"Arial Black",sans-serif;letter-spacing:-.04em;margin:0}
+h1 .dot{color:var(--lime);text-shadow:0 0 14px var(--lime)}
+.tag{margin:0;max-width:30ch;color:var(--soft);font-size:clamp(18px,4.6vw,22px)}
+.down{margin-top:10px;display:inline-flex;align-items:center;gap:8px;color:var(--dim);text-decoration:none;font-weight:700;letter-spacing:.12em;font-size:13px;text-transform:uppercase}
+.down:hover{color:var(--ink)}
+h2{font:800 clamp(22px,5vw,30px)/1.1 Unbounded,"Arial Black",sans-serif;letter-spacing:-.02em;margin:0 0 20px}
+section{padding:30px 0 50px}
+.game{display:grid;grid-template-columns:1fr;gap:0;background:var(--card);border:1px solid var(--line);border-radius:26px;overflow:hidden}
+.shot{display:block;position:relative;aspect-ratio:1024/500;background:#0b1029 center/cover no-repeat url("stable/play-store-feature-graphic-1024x500.png")}
+.info{padding:26px clamp(22px,4vw,40px) 30px;display:flex;flex-direction:column;gap:14px}
+.info .top{display:flex;align-items:center;gap:14px}
+.info img{width:64px;height:64px;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.info h3{font:800 26px/1 Unbounded,"Arial Black",sans-serif;margin:0}
+.info .kind{color:var(--dim);font-size:15px;margin:2px 0 0}
+.info p{margin:0;color:var(--soft)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.chips li{font-size:14px;font-weight:700;padding:4px 12px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--soft)}
+.actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:4px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 24px;border-radius:999px;font:800 17px "Baloo 2",system-ui,sans-serif;text-decoration:none;color:#0E1330;background:var(--lime);box-shadow:0 0 0 0 rgba(198,255,61,.5);transition:transform .15s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 26px -6px rgba(198,255,61,.7)}
+.soon{color:var(--dim);font-size:15px}
+.more{margin-top:18px;border:1px dashed var(--line);border-radius:22px;padding:22px 24px;color:var(--dim);display:flex;align-items:center;gap:14px}
+.more b{color:var(--soft)}
+footer{border-top:1px solid var(--line);padding:26px 0 calc(30px + env(safe-area-inset-bottom,0px));color:var(--dim);font-size:15px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:10px 26px;justify-content:space-between}
+footer a{color:var(--soft)}
+@media (min-width:760px){.info{display:grid;grid-template-columns:auto 1fr;column-gap:36px;align-items:start}.info .top{grid-row:span 2}.info p,.chips,.actions{grid-column:2}}
+@media (prefers-reduced-motion:reduce){.logo path{animation:none;stroke-dashoffset:0}.logo::before{animation:none;opacity:1}}
+</style>
+</head>
+<body>
+<header class="hero wrap">
+  <div class="logo" role="img" aria-label="Studio.grane logo">
+    <svg viewBox="0 0 200 200" aria-hidden="true">
+      <path class="c3" pathLength="1" d="M100 114L32 166"/><path class="c3" pathLength="1" d="M100 114L168 166"/>
+      <path class="c2" pathLength="1" d="M100 80L50 122"/><path class="c2" pathLength="1" d="M100 80L150 122"/>
+      <path class="c1" pathLength="1" d="M100 46L68 78"/><path class="c1" pathLength="1" d="M100 46L132 78"/>
+    </svg>
+  </div>
+  <h1>studio<span class="dot">.</span>grane</h1>
+  <p class="tag">Small, bright games for your phone. Easy to start, hard to put down.</p>
+  <a class="down" href="#games">Our games <span aria-hidden="true">↓</span></a>
+</header>
+
+<main>
+<section id="games" class="wrap">
+  <h2>Games</h2>
+  <article class="game">
+    <a class="shot" href="stable/" aria-label="Play Stable"></a>
+    <div class="info">
+      <div class="top">
+        <img src="stable/icon-192.png" alt="" width="64" height="64">
+        <div><h3>Stable</h3><p class="kind">Tower stacking</p></div>
+      </div>
+      <p>Tap to drop the block, land it perfectly and build all the way to the edge of the universe. Campaign, rhythm, pets and much more.</p>
+      <ul class="chips"><li>Free</li><li>Phone and desktop</li><li>No account needed</li></ul>
+      <div class="actions">
+        <a class="btn" href="stable/">Play now</a>
+        <span class="soon">Coming soon to Google Play</span>
+      </div>
+    </div>
+  </article>
+  <div class="more"><span aria-hidden="true">✦</span><span><b>More games are on the way.</b> Check back soon.</span></div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© <span id="yr">2026</span> Studio.grane</span>
+    <span><a href="mailto:studio.grane@gmail.com">studio.grane@gmail.com</a> · <a href="stable/privacy.html">Stable privacy policy</a></span>
+  </div>
+</footer>
+<script>try{document.getElementById('yr').textContent=new Date().getFullYear();}catch(e){}</script>
+</body>
+</html>
