@@ -10,3 +10,6 @@
 
 /stable/
   Cache-Control: no-cache
+
+/stable/*
+  X-Robots-Tag: noindex

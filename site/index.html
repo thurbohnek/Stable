@@ -50,14 +50,17 @@ section{padding:30px 0 50px}
 .actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:4px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 24px;border-radius:999px;font:800 17px "Baloo 2",system-ui,sans-serif;text-decoration:none;color:#0E1330;background:var(--lime);box-shadow:0 0 0 0 rgba(198,255,61,.5);transition:transform .15s,box-shadow .2s}
 .btn:hover{transform:translateY(-2px);box-shadow:0 8px 26px -6px rgba(198,255,61,.7)}
-.soon{color:var(--dim);font-size:15px}
+.soon{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0 18px;border-radius:999px;border:1.5px solid rgba(198,255,61,.55);color:var(--lime);font-weight:800;font-size:16px;white-space:nowrap}
+.pip{width:8px;height:8px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime);animation:pip 1.6s ease-in-out infinite}
+@keyframes pip{50%{opacity:.35}}
+.where{color:var(--soft);font-weight:700;font-size:16px}
 .more{margin-top:18px;border:1px dashed var(--line);border-radius:22px;padding:22px 24px;color:var(--dim);display:flex;align-items:center;gap:14px}
 .more b{color:var(--soft)}
 footer{border-top:1px solid var(--line);padding:26px 0 calc(30px + env(safe-area-inset-bottom,0px));color:var(--dim);font-size:15px}
 footer .wrap{display:flex;flex-wrap:wrap;gap:10px 26px;justify-content:space-between}
 footer a{color:var(--soft)}
 @media (min-width:760px){.info{display:grid;grid-template-columns:auto 1fr;column-gap:36px;align-items:start}.info .top{grid-row:span 2}.info p,.chips,.actions{grid-column:2}}
-@media (prefers-reduced-motion:reduce){.logo path{animation:none;stroke-dashoffset:0}.logo::before{animation:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.logo path{animation:none;stroke-dashoffset:0}.pip{animation:none}.logo::before{animation:none;opacity:1}}
 </style>
 </head>
 <body>
@@ -78,17 +81,16 @@ footer a{color:var(--soft)}
 <section id="games" class="wrap">
   <h2>Games</h2>
   <article class="game">
-    <a class="shot" href="stable/" aria-label="Play Stable"></a>
+    <div class="shot" role="img" aria-label="Stable: stack all the way to the stars"></div>
     <div class="info">
       <div class="top">
         <img src="stable/icon-192.png" alt="" width="64" height="64">
         <div><h3>Stable</h3><p class="kind">Tower stacking</p></div>
       </div>
       <p>Tap to drop the block, land it perfectly and build all the way to the edge of the universe. Campaign, rhythm, pets and much more.</p>
-      <ul class="chips"><li>Free</li><li>Phone and desktop</li><li>No account needed</li></ul>
+      <ul class="chips"><li>Free</li><li>Android and iPhone</li><li>No account needed</li></ul>
       <div class="actions">
-        <a class="btn" href="stable/">Play now</a>
-        <span class="soon">Coming soon to Google Play</span>
+        <span class="soon"><span class="pip" aria-hidden="true"></span>Coming soon</span><span class="where">to Google Play and the App Store</span>
       </div>
     </div>
   </article>
