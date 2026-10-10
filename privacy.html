@@ -23,7 +23,7 @@ table{width:100%;border-collapse:collapse;font-size:.92rem;margin:10px 0}th,td{b
 <tr><th>Data</th><th>Why</th><th>Legal basis (GDPR)</th><th>How long</th></tr>
 <tr><td><b>Game progress on your device</b> (scores, coins, items, settings), saved in the app's local storage</td><td>So the game remembers your progress</td><td>Necessary to provide the game you asked for (Art. 6(1)(b)); local storage that is strictly necessary needs no consent</td><td>Until you use Reset progress or uninstall</td></tr>
 <tr><td><b>Random player ID and login token</b> (anonymous, not linked to who you are)</td><td>To run the online features</td><td>Art. 6(1)(b)</td><td>Until you delete your online data, or 24 months without use</td></tr>
-<tr><td><b>Nickname and best scores</b> (Endless and weekly tournament)</td><td>Leaderboards. <b>Your nickname and scores are shown to other players.</b></td><td>Art. 6(1)(b)</td><td>Until you delete your online data, or 24 months without use</td></tr>
+<tr><td><b>Nickname and best scores</b> (Endless and weekly tournament)</td><td>Leaderboards. <b>Your nickname and scores are shown to other players.</b> A new nickname is first checked by us and is shown to others once we approve it.</td><td>Art. 6(1)(b)</td><td>Until you delete your online data, or 24 months without use</td></tr>
 <tr><td><b>Cloud save</b> (a copy of your game progress) and a <b>restore code</b></td><td>Backup, and moving your progress to a new phone</td><td>Art. 6(1)(b)</td><td>Until you delete your online data, or 24 months without use</td></tr>
 <tr><td><b>Game statistics</b>, sent with the cloud save: which game modes, pets, biomes, blocks, songs and stages you play, power-ups used and where they came from, screens opened, ads watched and purchases made in the game, number of sessions and play time</td><td>To see which parts of the game are used and improve the game. We only look at it in the game; it is not linked to who you are and never shared</td><td>Our legitimate interest in improving the game (Art. 6(1)(f))</td><td>Until you delete your online data, or 24 months without use</td></tr>
 <tr><td><b>Feedback you send</b>: your text plus technical details (game mode, level, screen size, device and browser type, language, time)</td><td>To answer you and fix problems</td><td>Our legitimate interest in a working game (Art. 6(1)(f))</td><td>12 months</td></tr>
@@ -37,6 +37,7 @@ table{width:100%;border-collapse:collapse;font-size:.92rem;margin:10px 0}th,td{b
 <ul>
 <li><b>Supabase</b> (Supabase Inc.): database and anonymous login. Our data is stored on servers in the EU (Stockholm, Sweden).</li>
 <li><b>Cloudflare</b> (Cloudflare Inc.): hosting and delivery of studio.grane.app.</li>
+<li><b>ntfy</b> (ntfy.sh): sends us a phone notification when a player picks a new nickname, so we can check it. Only the nickname and a short random code are sent.</li>
 <li><b>GitHub</b> (GitHub Inc.): hosting of the older game address thurbohnek.github.io/Stable.</li>
 <li><b>Google</b>: if you install Stable from Google Play, Google handles the download (and later any purchases) under its own privacy policy.</li>
 </ul>
