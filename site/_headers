@@ -13,9 +13,11 @@
 
 /stable/index.html
   Cache-Control: no-cache
+  Access-Control-Allow-Origin: capacitor://localhost
 
 /stable/
   Cache-Control: no-cache
+  Access-Control-Allow-Origin: capacitor://localhost
 
 /stable/*
   X-Robots-Tag: noindex
