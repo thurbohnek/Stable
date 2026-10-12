@@ -14,8 +14,7 @@
 /* studio.grane.app/stable: add the missing slash, and receive saved progress from the old address (thurbohnek.github.io/Stable) */
 (function(){try{
 if(/\/stable$/i.test(location.pathname)){location.replace(location.pathname+'/'+location.search+location.hash);return;}
-/* the old address (thurbohnek.github.io/Stable) forwards players and their saved progress to studio.grane.app/stable */
-if(/github\.io$/i.test(location.hostname)){location.replace(location.origin+'/Stable/migrate.html');return;}
+/* NOTE (Oct 12): the installed Play app still opens thurbohnek.github.io/Stable, so that address must keep running the game. Never forward it. */
 if(!/(^|\.)grane\.app$/.test(location.hostname))return;
 var LS=localStorage,F='stable-moved',i,k,mine=0;
 for(i=0;i<LS.length;i++){k=LS.key(i);if(k&&k.indexOf('stable-')===0&&k!==F)mine++;}
