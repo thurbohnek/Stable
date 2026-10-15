@@ -1,0 +1,17 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stable</title><meta name="robots" content="noindex">
+<style>html,body{margin:0;background:#0E1330;color:#fff;font:600 16px system-ui,sans-serif}body{display:grid;place-items:center;min-height:100vh}</style></head>
+<body><div>Moving your progress…</div>
+<script>
+/* (Oct 15) Hand-off to the new address. Play-app version 2 opens studio.grane.app/stable; this page runs once on the old
+   address, reads the progress and login saved here and sends it straight over in the address fragment (#sth=), which
+   never reaches any server. Only when sent here by studio.grane.app (referrer); otherwise it just forwards. */
+(function(){var T='https://studio.grane.app/stable/';
+  try{
+    if(!/^https:\/\/studio\.grane\.app\//.test(document.referrer)){location.replace(T);return;}
+    var o={},ls=window.localStorage;
+    for(var i=0;i<ls.length;i++){var k=ls.key(i);if(k&&(k.indexOf('stable-')===0||k==='sb-stable-session'))o[k]=ls.getItem(k);}
+    var s=Object.keys(o).length?btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_'):'none';
+    location.replace(T+'#sth='+s);
+  }catch(e){location.replace(T);}
+})();
+</script></body></html>
