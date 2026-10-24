@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Contact · Studio.grane</title>
+<meta name="description" content="How to contact Studio.grane, the maker of Stable.">
+<meta name="theme-color" content="#0E1330">
+<meta property="og:title" content="Studio.grane">
+<meta property="og:description" content="Small, bright games for your phone.">
+<meta property="og:image" content="https://studio.grane.app/stable/play-store-feature-graphic-1024x500.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' rx='44' fill='%230E1330'/%3E%3Cg fill='none' stroke-width='20' stroke-linecap='round'%3E%3Cpath d='M100 114L32 166M100 114L168 166' stroke='%23FF4FB0'/%3E%3Cpath d='M100 80L50 122M100 80L150 122' stroke='%233DE0FF'/%3E%3Cpath d='M100 46L68 78M100 46L132 78' stroke='%23C6FF3D'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preload" href="fonts/baloo2-latin.woff" as="font" type="font/woff" crossorigin>
+<style>
+@font-face{font-family:"Baloo 2";font-style:normal;font-weight:400 800;font-display:swap;src:url(fonts/baloo2-latin.woff) format("woff")}
+@font-face{font-family:"Unbounded";font-style:normal;font-weight:200 900;font-display:swap;src:url(fonts/unbounded-latin.woff) format("woff")}
+:root{--bg:#0E1330;--bg2:#070a1c;--ink:#ffffff;--soft:rgba(255,255,255,.72);--dim:rgba(255,255,255,.5);--lime:#C6FF3D;--cyan:#3DE0FF;--pink:#FF4FB0;--card:rgba(255,255,255,.06);--line:rgba(255,255,255,.12)}
+*{box-sizing:border-box}
+html{background:var(--bg2)}
+body{margin:0;min-height:100vh;color:var(--ink);font:500 17px/1.55 "Baloo 2",system-ui,sans-serif;background:radial-gradient(120% 70% at 50% 0%,#1a2152 0%,var(--bg) 50%,var(--bg2) 100%) no-repeat;overflow-x:hidden}
+a{color:var(--cyan)}
+.wrap{max-width:980px;margin:0 auto;padding:0 20px}
+h1{font:800 clamp(30px,8vw,48px)/1.05 Unbounded,"Arial Black",sans-serif;letter-spacing:-.03em;margin:0 0 10px}
+h1 .dot{color:var(--lime);text-shadow:0 0 14px var(--lime)}
+main.wrap{padding-top:56px;padding-bottom:50px;max-width:720px}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--dim);text-decoration:none;font-weight:700;font-size:15px;margin-bottom:28px}
+.back:hover{color:var(--ink)}
+.lead{color:var(--soft);margin:0 0 26px;max-width:46ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px clamp(20px,4vw,32px)}
+dl{margin:0;display:grid;grid-template-columns:1fr;gap:4px 24px}
+dt{color:var(--dim);font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-top:14px}
+dt:first-child{margin-top:0}
+dd{margin:0;font-size:18px;font-weight:600}
+@media (min-width:640px){dl{grid-template-columns:auto 1fr;align-items:baseline}dt{margin-top:0}dd+dt{margin-top:0}dl>*{padding:8px 0}}
+.note{color:var(--dim);font-size:15px;margin:22px 0 0}
+footer{border-top:1px solid var(--line);padding:26px 0 calc(30px + env(safe-area-inset-bottom,0px));color:var(--dim);font-size:15px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:10px 26px;justify-content:space-between}
+footer a{color:var(--soft)}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <a class="back" href="./"><span aria-hidden="true">←</span> Studio.grane</a>
+  <h1>Contact<span class="dot">.</span></h1>
+  <p class="lead">Questions about Stable, a bug, a payment or your data? Send an email and you will get an answer from a real person.</p>
+  <div class="card">
+    <dl>
+      <dt>Studio</dt><dd>Studio.grane</dd>
+      <dt>Owner</dt><dd>Ørjan Grane</dd>
+      <dt>Email</dt><dd><a href="mailto:studio@grane.app">studio@grane.app</a></dd>
+      <dt>Address</dt><dd>Steinbakken 93<br>8610 Mo i Rana<br>Norway</dd>
+    </dl>
+  </div>
+  <p class="note">In Stable you can also use <b>Settings → Send feedback</b>. To delete your game data, see <a href="stable/delete-data.html">Delete your data</a>.</p>
+</main>
+<footer>
+  <div class="wrap">
+    <span>© <span id="yr">2026</span> Studio.grane</span>
+    <span><a href="contact.html">Contact</a> · <a href="stable/privacy.html">Privacy</a> · <a href="stable/terms.html">Terms</a></span>
+  </div>
+</footer>
+<script>try{document.getElementById('yr').textContent=new Date().getFullYear();}catch(e){}</script>
+</body>
+</html>
