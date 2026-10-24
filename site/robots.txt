@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /stable-beta/
+
+Sitemap: https://studio.grane.app/sitemap.xml
