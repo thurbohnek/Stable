@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Contact Studio.grane – maker of Stable</title>
-<meta name="description" content="Contact Studio.grane, the Norwegian indie studio behind the Stable tower stacking game: email, owner and postal address.">
+<meta name="description" content="Contact Studio.grane, the independent studio behind the Stable tower stacking game: email, owner and postal address.">
 <link rel="canonical" href="https://studio.grane.app/contact.html">
-<meta name="theme-color" content="#0E1330">
+<meta name="theme-color" content="#0F1330">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Studio.grane">
 <meta property="og:url" content="https://studio.grane.app/contact.html">
@@ -14,53 +14,115 @@
 <meta property="og:description" content="Questions about Stable, a bug, a payment or your data? Send an email.">
 <meta property="og:image" content="https://studio.grane.app/stable/play-store-feature-graphic-1024x500.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' rx='44' fill='%230E1330'/%3E%3Cg fill='none' stroke-width='20' stroke-linecap='round'%3E%3Cpath d='M100 114L32 166M100 114L168 166' stroke='%23FF4FB0'/%3E%3Cpath d='M100 80L50 122M100 80L150 122' stroke='%233DE0FF'/%3E%3Cpath d='M100 46L68 78M100 46L132 78' stroke='%23C6FF3D'/%3E%3C/g%3E%3C/svg%3E">
-<link rel="preload" href="fonts/baloo2-latin.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="fonts/unbounded-latin.woff" as="font" type="font/woff" crossorigin>
 <style>
-@font-face{font-family:"Baloo 2";font-style:normal;font-weight:400 800;font-display:swap;src:url(fonts/baloo2-latin.woff) format("woff")}
 @font-face{font-family:"Unbounded";font-style:normal;font-weight:200 900;font-display:swap;src:url(fonts/unbounded-latin.woff) format("woff")}
-:root{--bg:#0E1330;--bg2:#070a1c;--ink:#ffffff;--soft:rgba(255,255,255,.72);--dim:rgba(255,255,255,.5);--lime:#C6FF3D;--cyan:#3DE0FF;--pink:#FF4FB0;--card:rgba(255,255,255,.06);--line:rgba(255,255,255,.12)}
+@font-face{font-family:"Instrument Sans";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/InstrumentSans-Regular.woff) format("woff")}
+@font-face{font-family:"Instrument Sans";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/InstrumentSans-Bold.woff) format("woff")}
+@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/JetBrainsMono-Regular.woff) format("woff")}
+:root{--bg:#0F1330;--deep:#0B0E26;--line:#262B55;--border:#3A407A;--text:#EEF0F8;--muted:#B4B9D6;--subtle:#8A90B8;--lime:#C4FF3D;--cyan:#40E0FF;--pink:#FF4FB0;--pad:56px}
 *{box-sizing:border-box}
-html{background:var(--bg2)}
-body{margin:0;min-height:100vh;color:var(--ink);font:500 17px/1.55 "Baloo 2",system-ui,sans-serif;background:radial-gradient(120% 70% at 50% 0%,#1a2152 0%,var(--bg) 50%,var(--bg2) 100%) no-repeat;overflow-x:hidden}
-a{color:var(--cyan)}
-.wrap{max-width:980px;margin:0 auto;padding:0 20px}
-h1{font:800 clamp(30px,8vw,48px)/1.05 Unbounded,"Arial Black",sans-serif;letter-spacing:-.03em;margin:0 0 10px}
-h1 .dot{color:var(--lime);text-shadow:0 0 14px var(--lime)}
-main.wrap{padding-top:56px;padding-bottom:50px;max-width:720px}
-.back{display:inline-flex;align-items:center;gap:6px;color:var(--dim);text-decoration:none;font-weight:700;font-size:15px;margin-bottom:28px}
-.back:hover{color:var(--ink)}
-.lead{color:var(--soft);margin:0 0 26px;max-width:46ch}
-.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px clamp(20px,4vw,32px)}
-dl{margin:0;display:grid;grid-template-columns:1fr;gap:4px 24px}
-dt{color:var(--dim);font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-top:14px}
-dt:first-child{margin-top:0}
-dd{margin:0;font-size:18px;font-weight:600}
-@media (min-width:640px){dl{grid-template-columns:auto 1fr;align-items:baseline}dt{margin-top:0}dd+dt{margin-top:0}dl>*{padding:8px 0}}
-.note{color:var(--dim);font-size:15px;margin:22px 0 0}
-footer{border-top:1px solid var(--line);padding:26px 0 calc(30px + env(safe-area-inset-bottom,0px));color:var(--dim);font-size:15px}
-footer .wrap{display:flex;flex-wrap:wrap;gap:10px 26px;justify-content:space-between}
-footer a{color:var(--soft)}
+html{background:var(--deep)}
+body{margin:0;background:var(--bg);color:var(--text);font:400 18px/1.6 "Instrument Sans","DM Sans",system-ui,sans-serif;overflow-x:hidden}
+a{color:var(--lime);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan)}
+a:focus-visible,.pill:focus-visible{outline:2px solid var(--cyan);outline-offset:4px;border-radius:6px}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:13px}
+.disp{font-family:Unbounded,"Arial Black",sans-serif}
+nav.top{display:flex;justify-content:space-between;align-items:center;padding:28px var(--pad)}
+nav.top .mark{display:block;width:44px;height:44px}
+nav.top .links{display:flex;gap:40px;font-size:15px;letter-spacing:.04em}
+nav.top .links a{color:var(--text)}
+nav.top .links a:hover{color:var(--cyan)}
+.hero{padding:96px var(--pad) 64px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:28px}
+.eyebrow{letter-spacing:.2em;color:var(--cyan)}
+h1{margin:0;font-weight:800;font-size:84px;line-height:1.02;letter-spacing:-.02em;max-width:980px;text-wrap:balance}
+.hero p{margin:0;font-size:20px;line-height:1.6;color:var(--muted);max-width:600px;text-wrap:pretty}
+.feature{padding:0 var(--pad) 112px}
+.feature .frame{aspect-ratio:1024/500;border-radius:16px;overflow:hidden;background:#161B40;transition:transform .4s ease}
+.feature .frame:hover{transform:scale(1.01)}
+.feature img{width:100%;height:100%;object-fit:cover;display:block}
+.games{padding:0 var(--pad) 112px;display:flex;flex-direction:column;gap:40px}
+.games .head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:20px}
+h2{margin:0;font-weight:600;font-size:36px}
+.games .count{color:var(--subtle)}
+.game{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:56px;align-items:center}
+.game .art{aspect-ratio:4/3;border-radius:16px;overflow:hidden;background:#1A1F48;transition:transform .4s ease}
+.game .art:hover{transform:translateY(-6px)}
+.game .art img{width:100%;height:100%;object-fit:cover;display:block}
+.game .info{display:flex;flex-direction:column;gap:24px}
+.game .tag{letter-spacing:.16em;color:var(--pink)}
+h3{margin:0;font-weight:800;font-size:56px;letter-spacing:-.02em;line-height:1}
+.game p{margin:0;font-size:18px;line-height:1.6;color:var(--muted);text-wrap:pretty}
+.stores{display:flex;flex-wrap:wrap;gap:12px}
+.pill{padding:14px 22px;border-radius:999px;font-weight:700;font-size:15px;line-height:1;transition:background .2s,border-color .2s}
+.pill.solid{background:var(--text);color:var(--bg)}
+.pill.solid:hover{background:var(--lime)}
+.pill.ghost{border:1px solid var(--border);color:var(--text)}
+.pill.ghost:hover{border-color:var(--cyan)}
+.pill small{font-weight:400;opacity:.65;margin-left:6px}
+footer{padding:96px var(--pad);background:var(--deep);display:flex;justify-content:space-between;align-items:flex-end;gap:40px}
+footer .say{display:flex;flex-direction:column;gap:16px}
+footer h2{font-size:44px;max-width:620px}
+footer .mail{font-size:24px}
+footer .legal{display:flex;flex-direction:column;align-items:flex-end;gap:10px;font-size:14px;color:var(--subtle)}
+footer .legal nav{display:flex;gap:20px}
+footer .legal a{color:var(--subtle)}
+footer .legal a:hover{color:var(--cyan)}
+.js [data-reveal]{opacity:0;transform:translateY(32px);transition:opacity .9s ease,transform .9s ease}
+.js [data-reveal].in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.js [data-reveal]{opacity:1;transform:none;transition:none}.feature .frame,.game .art{transition:none}}
+@media (max-width:768px){
+ :root{--pad:24px}
+ nav.top{padding-top:22px;padding-bottom:22px}
+ nav.top .links{gap:28px}
+ .hero{padding-top:56px;padding-bottom:48px;gap:22px}
+ h1{font-size:44px}
+ .hero p{font-size:18px}
+ .feature,.games{padding-bottom:72px}
+ .games{gap:28px}
+ h2{font-size:28px}
+ .game{grid-template-columns:1fr;gap:28px}
+ h3{font-size:44px}
+ footer{flex-direction:column;align-items:flex-start;padding-top:64px;padding-bottom:calc(48px + env(safe-area-inset-bottom,0px))}
+ footer h2{font-size:34px}
+ footer .mail{font-size:20px}
+ footer .legal{align-items:flex-start}
+}
+.page{padding:72px var(--pad) 112px;max-width:900px}
+.page h1{font-size:64px}
+.page .lead{color:var(--muted);font-size:20px;margin:24px 0 48px;max-width:560px}
+dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:0 40px;border-top:1px solid var(--line)}
+dt,dd{margin:0;padding:18px 0;border-bottom:1px solid var(--line)}
+dt{color:var(--subtle);font-family:"JetBrains Mono",ui-monospace,monospace;font-size:13px;letter-spacing:.16em;padding-top:22px}
+dd{font-size:20px}
+.page .more{color:var(--muted);margin:40px 0 0;max-width:560px}
+@media (max-width:768px){.page{padding-top:40px;padding-bottom:72px}.page h1{font-size:44px}dl{grid-template-columns:1fr}dt{border-bottom:0;padding-bottom:0}dd{padding-top:6px}}
 </style>
 </head>
 <body>
-<main class="wrap">
-  <a class="back" href="./"><span aria-hidden="true">←</span> Studio.grane</a>
-  <h1>Contact<span class="dot">.</span></h1>
+<nav class="top" aria-label="Main">
+  <a href="./"><svg class="mark" viewBox="0 0 200 200" role="img" aria-label="Studio.grane"><g fill="none" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"><path d="M100 114L32 166M100 114L168 166" stroke="#FF4FB0"/><path d="M100 80L50 122M100 80L150 122" stroke="#40E0FF"/><path d="M100 46L68 78M100 46L132 78" stroke="#C4FF3D"/></g></svg></a>
+  <div class="links"><a href="./#games">Games</a><a href="contact.html">Contact</a></div>
+</nav>
+<main class="page">
+  <h1 class="disp">Contact</h1>
   <p class="lead">Questions about Stable, a bug, a payment or your data? Send an email and you will get an answer from a real person.</p>
-  <div class="card">
-    <dl>
-      <dt>Studio</dt><dd>Studio.grane</dd>
-      <dt>Owner</dt><dd>Ørjan Grane</dd>
-      <dt>Email</dt><dd><a href="mailto:studio@grane.app">studio@grane.app</a></dd>
-      <dt>Address</dt><dd>Steinbakken 93<br>8610 Mo i Rana<br>Norway</dd>
-    </dl>
-  </div>
-  <p class="note">In Stable you can also use <b>Settings → Send feedback</b>. To delete your game data, see <a href="stable/delete-data.html">Delete your data</a>.</p>
+  <dl>
+    <dt>EMAIL</dt><dd><a href="mailto:studio@grane.app">studio@grane.app</a></dd>
+    <dt>STUDIO</dt><dd>Studio.grane, run by Ørjan Grane</dd>
+    <dt>ADDRESS</dt><dd>Steinbakken 93, 8610 Mo i Rana, Norway</dd>
+  </dl>
+  <p class="more">In Stable you can also use Settings, then Send feedback. To delete your game data, see <a href="stable/delete-data.html">Delete your data</a>.</p>
 </main>
-<footer>
-  <div class="wrap">
+<footer id="contact">
+  <div class="say">
+    <h2 class="disp">Say hello.</h2>
+    <a class="mail" href="mailto:studio@grane.app">studio@grane.app</a>
+  </div>
+  <div class="legal">
+    <nav aria-label="Legal"><a href="contact.html">Contact details</a><a href="stable/privacy.html">Privacy</a><a href="stable/terms.html">Terms</a></nav>
     <span>© <span id="yr">2026</span> Studio.grane</span>
-    <span><a href="contact.html">Contact</a> · <a href="stable/privacy.html">Privacy</a> · <a href="stable/terms.html">Terms</a></span>
   </div>
 </footer>
 <script>try{document.getElementById('yr').textContent=new Date().getFullYear();}catch(e){}</script>
