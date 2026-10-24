@@ -18,6 +18,10 @@
 <meta property="og:image:width" content="1024">
 <meta property="og:image:height" content="500">
 <meta property="og:image:alt" content="Stable: stack all the way to the stars">
+<meta property="og:video" content="https://studio.grane.app/img/stable-trailer.mp4">
+<meta property="og:video:type" content="video/mp4">
+<meta property="og:video:width" content="1280">
+<meta property="og:video:height" content="720">
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Studio.grane – independent mobile games">
@@ -52,7 +56,7 @@ nav.top .links a:hover{color:var(--cyan)}
 h1{margin:0;font-weight:800;font-size:84px;line-height:1.02;letter-spacing:-.02em;max-width:980px;text-wrap:balance}
 .hero p{margin:0;font-size:20px;line-height:1.6;color:var(--muted);max-width:600px;text-wrap:pretty}
 .feature{padding:0 var(--pad) 112px}
-.feature .frame{aspect-ratio:1024/500;border-radius:16px;overflow:hidden;background:#161B40;transition:transform .4s ease}
+.feature .frame{aspect-ratio:16/9;position:relative;border-radius:16px;overflow:hidden;background:#161B40;transition:transform .4s ease}
 .feature .frame:hover{transform:scale(1.01)}
 .feature img{width:100%;height:100%;object-fit:cover;display:block}
 .games{padding:0 var(--pad) 112px;scroll-margin-top:24px;display:flex;flex-direction:column;gap:40px}
@@ -119,6 +123,26 @@ footer .legal a:hover{color:var(--cyan)}
 .down{margin-top:10px;display:inline-flex;align-items:center;gap:8px;color:rgba(255,255,255,.5);font:700 13px "Baloo 2",system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase}
 .down:hover{color:var(--text)}
 @media (prefers-reduced-motion:reduce){.logo path{animation:none;stroke-dashoffset:0}.logo::before{animation:none;opacity:1}}
+.feature video{width:100%;height:100%;display:block;object-fit:cover;background:#0F1330}
+.play{position:absolute;left:50%;top:50%;width:88px;height:88px;margin:-44px 0 0 -44px;border:0;border-radius:50%;background:var(--lime);box-shadow:0 0 60px rgba(196,255,61,.35);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.play:hover{transform:scale(1.06)}
+.play:focus-visible{outline:3px solid var(--cyan);outline-offset:4px}
+.play span{width:0;height:0;border-left:24px solid var(--bg);border-top:15px solid transparent;border-bottom:15px solid transparent;margin-left:6px}
+.tv.playing .play{display:none}
+@media (max-width:768px){.play{width:64px;height:64px;margin:-32px 0 0 -32px}.play span{border-left-width:18px;border-top-width:11px;border-bottom-width:11px;margin-left:4px}}
+/* wide screens: keep the content in a 1280px column and give the top more presence */
+:root{--side:max(var(--pad),calc((100% - 1168px)/2))}
+.feature,.games,footer,nav.top,.page{padding-left:var(--side);padding-right:var(--side)}
+.page{max-width:none}
+.page>*{max-width:900px}
+@media (min-width:1024px){
+ .hero0{min-height:100vh;gap:28px}
+ .logo{width:240px}
+ .hero0 h1{font-size:104px}
+ .tag0{font-size:24px}
+ .down{font-size:14px}
+ .game{gap:72px}
+}
 </style>
 </head>
 <body>
@@ -135,12 +159,15 @@ footer .legal a:hover{color:var(--cyan)}
   <a class="down" href="#games">Our games <span aria-hidden="true">↓</span></a>
 </header>
 <div class="feature" data-reveal>
-  <div class="frame"><img src="stable/play-store-feature-graphic-1024x500.png" width="1024" height="500" alt="Stable: stack all the way to the stars"></div>
+  <div class="frame tv" id="tv">
+    <video id="trailer" poster="img/stable-trailer-poster.webp" preload="none" playsinline width="1280" height="720" aria-label="Stable trailer"><source src="img/stable-trailer.mp4" type="video/mp4"><source src="img/stable-trailer.webm" type="video/webm"></video>
+    <button class="play" id="play" type="button" aria-label="Play the Stable trailer"><span></span></button>
+  </div>
 </div>
 <section class="games" id="games" data-reveal aria-labelledby="games-h">
   <div class="head"><h2 class="disp" id="games-h">Games</h2><span class="count mono" aria-label="1 game">01 / 01</span></div>
   <article class="game">
-    <div class="art"><img src="img/stable-art.webp" width="1200" height="900" loading="lazy" alt="Two screens from Stable: the main menu, and a 24-block tower with a cat on top"></div>
+    <div class="art"><img src="img/stable-art.webp" width="1200" height="900" loading="lazy" alt="Three screens from Stable: the campaign map, a 30-block tower with a cat on top, and the main menu"></div>
     <div class="info">
       <div class="tag mono">COMING SOON · iOS &amp; ANDROID</div>
       <h3 class="disp">Stable</h3>
@@ -160,6 +187,7 @@ footer .legal a:hover{color:var(--cyan)}
   </div>
 </footer>
 <script>
+try{const v=document.getElementById('trailer'),t=document.getElementById('tv');document.getElementById('play').onclick=()=>{t.classList.add('playing');v.controls=true;v.play().catch(()=>{});};v.addEventListener('ended',()=>{t.classList.remove('playing');v.controls=false;v.load();});}catch(e){}
 try{document.getElementById('yr').textContent=new Date().getFullYear();}catch(e){}
 try{if('IntersectionObserver' in window&&!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('js');
   const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.12});

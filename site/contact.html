@@ -98,6 +98,19 @@ dt{color:var(--subtle);font-family:"JetBrains Mono",ui-monospace,monospace;font-
 dd{font-size:20px}
 .page .more{color:var(--muted);margin:40px 0 0;max-width:560px}
 @media (max-width:768px){.page{padding-top:40px;padding-bottom:72px}.page h1{font-size:44px}dl{grid-template-columns:1fr}dt{border-bottom:0;padding-bottom:0}dd{padding-top:6px}}
+/* wide screens: keep the content in a 1280px column and give the top more presence */
+:root{--side:max(var(--pad),calc((100% - 1168px)/2))}
+.feature,.games,footer,nav.top,.page{padding-left:var(--side);padding-right:var(--side)}
+.page{max-width:none}
+.page>*{max-width:900px}
+@media (min-width:1024px){
+ .hero0{min-height:100vh;gap:28px}
+ .logo{width:240px}
+ .hero0 h1{font-size:104px}
+ .tag0{font-size:24px}
+ .down{font-size:14px}
+ .game{gap:72px}
+}
 </style>
 </head>
 <body>
