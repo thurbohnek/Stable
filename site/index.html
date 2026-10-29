@@ -135,9 +135,15 @@ footer .legal a:hover{color:var(--cyan)}
 .play span{width:0;height:0;border-left:24px solid var(--bg);border-top:15px solid transparent;border-bottom:15px solid transparent;margin-left:6px}
 .tv.playing .play{display:none}
 @media (max-width:768px){.play{width:64px;height:64px;margin:-32px 0 0 -32px}.play span{border-left-width:18px;border-top-width:11px;border-bottom-width:11px;margin-left:4px}}
+.game .more{font-weight:700;font-size:16px}
+.about{padding:0 var(--pad) 112px;display:flex;flex-direction:column;gap:32px}
+.about .head{border-bottom:1px solid var(--line);padding-bottom:20px}
+.about .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+.about p{margin:0;color:var(--muted);font-size:18px;line-height:1.65}
+@media (max-width:768px){.about{padding-bottom:72px}.about .cols{grid-template-columns:1fr;gap:18px}}
 /* wide screens: keep the content in a 1280px column and give the top more presence */
 :root{--side:max(var(--pad),calc((100% - 1168px)/2))}
-.feature,.games,footer,nav.top,.page{padding-left:var(--side);padding-right:var(--side)}
+.feature,.games,.about,footer,nav.top,.page{padding-left:var(--side);padding-right:var(--side)}
 .page{max-width:none}
 .page>*{max-width:900px}
 @media (min-width:1024px){
@@ -178,8 +184,16 @@ footer .legal a:hover{color:var(--cyan)}
       <h3 class="disp">Stable</h3>
       <p>Our first game. Tap to drop each block onto the one below. Land it straight and it keeps its full width; miss the edge and the overhang falls off. A 120-stage campaign, endless mode, daily challenges, rhythm, pets and more.</p>
       <div class="stores"><span class="pill solid" title="Coming soon">App Store<small>soon</small></span><span class="pill ghost" title="Coming soon">Google Play<small>soon</small></span></div>
+      <a class="more" href="games/stable.html">How to play, game modes, bosses and tips <span aria-hidden="true">→</span></a>
     </div>
   </article>
+</section>
+<section class="about" id="about" data-reveal aria-labelledby="about-h">
+  <div class="head"><h2 class="disp" id="about-h">About the studio</h2></div>
+  <div class="cols">
+    <p>Studio.grane is an independent game studio in Mo i Rana, in the north of Norway. We make small games for phones: easy to pick up in a spare minute, with enough depth that you keep coming back for one more try.</p>
+    <p>Our games are free to play, work without an account, and never ask for more data than they need. Everything in them can be earned by playing. If you have an idea, find a bug or just want to say hi, write to us. Every message is read.</p>
+  </div>
 </section>
 <footer id="contact" data-reveal>
   <div class="say">
